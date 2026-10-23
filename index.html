@@ -173,14 +173,20 @@
     color:var(--faint); border:1px solid var(--line); border-radius:999px; padding:3px 9px; flex:none;
   }
   /* ad card styled as an app-store listing row */
-  .appcard{position:relative; padding:16px 18px}
-  .applink{display:flex; align-items:center; gap:14px; text-decoration:none; color:var(--text)}
+  .appcard{position:relative; padding:16px}
+  .applink{display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text)}
   .appicon{width:48px; height:48px; border-radius:12px; flex:none; display:block}
   .appmeta{display:flex; flex-direction:column; gap:1px; flex:1; min-width:0}
   .appnamerow{display:flex; align-items:center; justify-content:space-between; gap:10px}
   .appname{font-size:17px; font-weight:700; letter-spacing:-.01em}
-  .appsub{font-size:13px; color:var(--muted)}
-  .apprate{font-size:12.5px; color:var(--faint)}
+  .appsub{font-size:13px; color:var(--muted); white-space:nowrap}
+  .apprate{font-size:12.5px; color:var(--faint); white-space:nowrap}
+  @media (max-width:380px){
+    .appicon{width:42px; height:42px; border-radius:11px}
+    .appsub{font-size:12px}
+    .apprate{font-size:11.5px}
+    .appbtn{padding:6px 11px; font-size:12.5px}
+  }
   .apprate .star{color:#FFD60A}
   .appbtn{flex:none}
   /* native store flavour per visitor platform (class set by JS) */
@@ -300,7 +306,7 @@
           <span class="appmeta">
             <span class="appnamerow"><span class="appname">Анкетка</span><span class="adpill swap" data-i18n="ad">Реклама</span></span>
             <span class="appsub swap" data-i18n="ank_desc">Зарабатывай на опросах</span>
-            <span class="apprate"><span class="star">★</span> <span id="ankRate">4,4 · 4,8 тыс. оценок</span> · <span class="swap" data-i18n="ank_sub">Онлайн-опросы</span></span>
+            <span class="apprate"><span class="star">★</span> <span id="ankRate">4,4 · 4,8 тыс. оценок</span></span>
           </span>
           <span class="btn btn-main appbtn"><span id="ankBtn">Открыть</span></span>
         </a>
