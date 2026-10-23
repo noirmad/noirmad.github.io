@@ -48,21 +48,6 @@
   html.pre:not(.ready) .reveal,
   html.pre:not(.ready) .cover img.ph{animation-play-state:paused}
 
-  /* ---------- splash: TV static -> gothic D -> CRT off ---------- */
-  #splash{position:fixed; inset:0; z-index:300; background:#000; cursor:pointer}
-  #spFrame{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; will-change:transform,filter}
-  #spNoise{position:absolute; inset:0; width:100%; height:100%; opacity:0; filter:blur(.6px) contrast(1.05)}
-  #spLetter{position:relative; top:-0.18em; font-family:'Old London',serif; font-size:52vmin; line-height:1; color:#f4f4f4; opacity:0;
-    text-shadow:0 0 22px rgba(255,255,255,.35), 0 0 60px rgba(255,255,255,.12)}
-  #spLetter .tear{position:absolute; inset:0; color:#f4f4f4; opacity:0; clip-path:inset(38% 0 44% 0); transform:translateX(-6px)}
-  #spScan{position:absolute; inset:0; pointer-events:none; opacity:.38; mix-blend-mode:multiply;
-    background:repeating-linear-gradient(to bottom,transparent 0 3px,rgba(0,0,0,.22) 3px 4px)}
-  #spRoll{position:absolute; left:0; right:0; height:16vh; top:-20vh; pointer-events:none; opacity:0;
-    background:linear-gradient(to bottom,transparent,rgba(255,255,255,.04),transparent)}
-  #spVig{position:absolute; inset:0; pointer-events:none;
-    background:radial-gradient(120% 90% at 50% 50%,transparent 55%,rgba(0,0,0,.78) 100%)}
-  #spFin{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
-
   /* ---------- cover: social banner 3:1, no blur ---------- */
   .cover{position:relative; aspect-ratio:3/1; max-height:440px; min-height:200px; overflow:hidden; background:#000}
   @media (max-width:640px){ .cover{aspect-ratio:16/9} }
@@ -254,160 +239,6 @@
 </style>
 </head>
 <body>
-<div id="splash" aria-hidden="true">
-  <div id="spFrame">
-    <canvas id="spNoise"></canvas>
-    <div id="spLetter">D<span class="tear">D</span></div>
-  </div>
-  <div id="spScan"></div>
-  <div id="spRoll"></div>
-  <div id="spVig"></div>
-  <canvas id="spFin"></canvas>
-</div>
-<script>
-/* splash engine: holds the entrance gate until the CRT-off finishes (or the user taps) */
-(function(){
-  window.__splashHold = true;
-  var qs = new URLSearchParams(location.search);
-  var seen = 0; try { seen = +localStorage.getItem('viz-splash') || 0; } catch(e){}
-  var mode = (Date.now() - seen < 24*3600*1000) ? 'short' : 'full';
-  var q = qs.get('splash'); if (q === 'full' || q === 'short' || q === 'off') mode = q;
-  var root = document.getElementById('splash');
-  if (mode === 'off'){ root.remove(); window.__splashHold = false; return; }
-  /* портал наружу: body до готовности стоит на opacity:0 (pagein на паузе) и прятал бы сплэш вместе со страницей */
-  document.documentElement.appendChild(root);
-  try { localStorage.setItem('viz-splash', '' + Date.now()); } catch(e){}
-  var frame = document.getElementById('spFrame'), cv = document.getElementById('spNoise'),
-      letter = document.getElementById('spLetter'), tear = letter.querySelector('.tear'),
-      roll = document.getElementById('spRoll'), fin = document.getElementById('spFin');
-  var cx = cv.getContext('2d');
-  var reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  document.body.style.overflow = 'hidden';
-  var OW = 288, OH = 512, off = document.createElement('canvas'); off.width = OW; off.height = OH;
-  var ox = off.getContext('2d'), oimg = ox.createImageData(OW, OH), odata = oimg.data;
-  var intensity = 0, frameN = 0, tick = 0, timer = null, grainTimer = null, done = false, waiting = false;
-  var SHORT = (mode === 'short');
-  var T_RAMP = SHORT ? 3 : 6, T_RESOLVE = SHORT ? 9 : 23, T_HOLD = SHORT ? 14 : 35;
-  function sizeCanvas(){ cv.width = Math.min(innerWidth, 560); cv.height = Math.min(innerHeight, 980); }
-  function drawGrain(){
-    for (var i = 0; i < odata.length; i += 4){ var v = 96 + ((Math.random() * 128) | 0); odata[i] = odata[i+1] = odata[i+2] = v; odata[i+3] = 255; }
-    ox.putImageData(oimg, 0, 0); cx.clearRect(0, 0, cv.width, cv.height); cx.drawImage(off, 0, 0, cv.width, cv.height);
-    cv.style.opacity = intensity.toFixed(3);
-    cv.style.transform = (intensity > 0.25 && (frameN++ % 6 === 0)) ? 'translateY(' + (Math.random() * 2 - 1).toFixed(1) + 'px)' : 'none';
-  }
-  function flick(t, from, span){
-    var base = Math.min(1, Math.max(0, (t - from) / span));
-    var dip = (Math.random() < 0.18) ? Math.random() * 0.35 : 0;
-    return Math.max(0, base * (1 - dip) + (Math.random() < 0.08 ? 0.12 : 0));
-  }
-  function finish(){
-    if (done) return; done = true;
-    stopTimers();
-    root.remove();
-    document.body.style.overflow = '';
-    window.__splashHold = false;
-    if (window.__flushReady) window.__flushReady();
-    else document.documentElement.classList.add('ready');
-  }
-  function crtOff(){
-    if (done) return;
-    stopTimers();
-    intensity = 0; cv.style.opacity = 0;
-    frame.style.transition = 'transform .22s cubic-bezier(.6,0,.9,.4), filter .22s';
-    frame.style.filter = 'brightness(3.4)';
-    frame.style.transform = 'scaleY(0.006)';
-    setTimeout(function(){
-      frame.style.opacity = '0';
-      finale();
-    }, 235);
-  }
-  /* финал одним непрерывным движением на canvas: полоска и её свечение сжимаются вместе до точки, точка догорает */
-  function finale(){
-    var W = innerWidth, H = innerHeight;
-    fin.width = W; fin.height = H;
-    var fx2 = fin.getContext('2d');
-    var cxp = W / 2, cyp = H / 2;
-    var t0 = performance.now(), DUR = 640;
-    function step(now){
-      if (done) return;
-      var p = Math.min(1, (now - t0) / DUR);
-      fx2.clearRect(0, 0, W, H);
-      var s = p < 0.72 ? (p / 0.72) : 1;
-      var e = Math.pow(s, 2.3);               /* стягивание ускоряется к концу — разряд, а не линейное скольжение */
-      var w = Math.max(4, W * (1 - e));
-      var ry = 6 - 2 * e;
-      var q = p < 0.72 ? 0 : (p - 0.72) / 0.28;
-      var a = p < 0.72 ? 1 : (1 - q) * (0.84 + 0.16 * Math.sin(q * 42) * (1 - q));  /* точка догорает с подрагиванием */
-      var jy = e > 0.55 && p < 0.72 ? (Math.random() * 1.2 - 0.6) : 0;              /* луч теряет стабильность */
-      if (a > 0){
-        var rx = w / 2 + 3 * (1 - e) + 4;
-        var g = fx2.createRadialGradient(cxp, cyp + jy, 0, cxp, cyp + jy, rx);
-        var ga = (0.26 + 0.34 * e) * a;  /* энергия уплотняется — свечение ярче, но ореол узкий и облегает полоску */
-        g.addColorStop(0, 'rgba(255,255,255,' + ga.toFixed(3) + ')');
-        g.addColorStop(0.55, 'rgba(255,255,255,' + (ga * 0.22).toFixed(3) + ')');
-        g.addColorStop(1, 'rgba(255,255,255,0)');
-        fx2.save(); fx2.translate(cxp, cyp + jy); fx2.scale(1, ry / rx); fx2.translate(-cxp, -(cyp + jy));
-        fx2.fillStyle = g; fx2.beginPath(); fx2.arc(cxp, cyp + jy, rx, 0, 7); fx2.fill(); fx2.restore();
-        fx2.fillStyle = 'rgba(255,255,255,' + a.toFixed(3) + ')';
-        if (p < 0.72) fx2.fillRect(cxp - w / 2, cyp + jy - 1, w, 2);
-        else { fx2.beginPath(); fx2.arc(cxp, cyp, 2.2, 0, 7); fx2.fill(); }
-      }
-      if (p < 1) requestAnimationFrame(step); else finish();
-    }
-    requestAnimationFrame(step);
-  }
-  function tryOff(){
-    if (window.__pageReady) { crtOff(); return; }
-    waiting = true; /* page still loading: hold the clean D until the gate is ready */
-    var waited = 0;
-    var iv = setInterval(function(){
-      waited += 100;
-      if (done){ clearInterval(iv); return; }
-      if (window.__pageReady || waited >= 2200){ clearInterval(iv); crtOff(); }
-    }, 100);
-  }
-  function step(){
-    tick++;
-    if (reduced){
-      intensity = 0; cv.style.opacity = 0;
-      if (tick === 1){ letter.style.filter = 'none'; letter.style.opacity = 1; }
-      if (tick === 8){ /* exit as soon as the page is ready */
-        if (window.__pageReady){ frame.style.transition = 'opacity .5s'; frame.style.opacity = 0; setTimeout(finish, 520); stopTimers(); }
-        else tick = 7;
-      }
-      return;
-    }
-    frame.style.filter = 'brightness(' + (1 + Math.sin(tick * .7) * 0.02).toFixed(3) + ')';
-    if (tick <= T_RAMP){ intensity = 0.16 + tick * (SHORT ? 0.1 : 0.05); }
-    else if (tick <= T_RESOLVE){
-      intensity = Math.max(0.12, 0.46 - (tick - T_RAMP) * (SHORT ? 0.055 : 0.02));
-      letter.style.opacity = flick(tick, T_RAMP, SHORT ? 6 : 17).toFixed(3);
-      letter.style.filter = 'blur(' + Math.max(0, 6 - (tick - T_RAMP) * (SHORT ? 1 : 0.4)).toFixed(1) + 'px)';
-      if (Math.random() < 0.12){
-        tear.style.opacity = 0.7; letter.style.transform = 'translateX(' + ((Math.random() * 5 - 2.5) | 0) + 'px)';
-        setTimeout(function(){ tear.style.opacity = 0; letter.style.transform = 'none'; }, 55);
-      }
-      if (tick === (SHORT ? 5 : 12)){ roll.style.transition = 'top 1.1s linear'; roll.style.opacity = 1; roll.style.top = '110vh'; }
-    }
-    else if (tick <= T_HOLD){ intensity = 0.05 + Math.random() * 0.015; letter.style.opacity = 1; letter.style.filter = 'blur(0)'; }
-    else { stopTimers(); tryOff(); }
-  }
-  function stopTimers(){ if (timer){ clearInterval(timer); timer = null; } if (grainTimer){ clearInterval(grainTimer); grainTimer = null; } }
-  function start(){
-    sizeCanvas();
-    grainTimer = setInterval(drawGrain, 40);
-    timer = setInterval(step, 50);
-    setTimeout(function(){ if (!done && !waiting) { stopTimers(); crtOff(); } }, 4500); /* absolute cap */
-  }
-  root.addEventListener('click', function(){ if (!done){ stopTimers(); crtOff(); } });
-  addEventListener('resize', sizeCanvas);
-  var begun = false;
-  function begin(){ if (begun) return; begun = true; start(); }
-  if (document.fonts && document.fonts.ready){ document.fonts.ready.then(function(){ setTimeout(begin, 30); }); setTimeout(begin, 700); }
-  else setTimeout(begin, 100);
-})();
-</script>
-
   <div class="cover">
     <img class="ph" src="vizitka-assets/cover.jpg" alt="" draggable="false">
     <div class="topbar">
@@ -586,14 +417,7 @@
   if (new URLSearchParams(location.search).get('lang') === 'en') setLang('en', true);
   // entrance gate: start all animations only when images and fonts are ready
   (function(){
-    const go = ()=>{
-      window.__pageReady = true;
-      if (window.__splashHold) { window.__splashPending = true; return; }
-      document.documentElement.classList.add('ready');
-    };
-    window.__flushReady = ()=>{
-      if (window.__splashPending) { window.__splashPending = false; document.documentElement.classList.add('ready'); }
-    };
+    const go = ()=>{ document.documentElement.classList.add('ready'); };
     const loaded = document.readyState === 'complete'
       ? Promise.resolve()
       : new Promise(r=>window.addEventListener('load', r, {once:true}));
