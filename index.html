@@ -139,14 +139,14 @@
 
   /* ---------- project card ---------- */
   .card{
-    background:var(--card); border:1px solid var(--line); border-radius:20px; padding:24px;
+    background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px;
     transition:transform .45s cubic-bezier(.22,.8,.3,1), box-shadow .45s ease, border-color .45s ease;
   }
   .card:hover{transform:translateY(-3px); box-shadow:var(--shadow); border-color:var(--faint)}
   .card-top{display:flex; align-items:center; justify-content:space-between; gap:12px}
-  .card h3{font-size:24px; font-weight:750; letter-spacing:-.01em; display:flex; align-items:center; gap:12px}
+  .card h3{font-size:20px; font-weight:750; letter-spacing:-.01em; display:flex; align-items:center; gap:10px}
   .ordo-ico{
-    width:40px; height:40px; border-radius:11px; border:1px solid var(--line); background:#000;
+    width:34px; height:34px; border-radius:10px; border:1px solid var(--line); background:#000;
     display:flex; align-items:center; justify-content:center; flex:none;
   }
   .live{
@@ -156,10 +156,10 @@
   }
   .live i{width:5px;height:5px;border-radius:50%;background:#4ade80; animation:pulse 2.2s ease infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-  .card p{margin-top:12px; color:var(--muted); font-size:15.5px; line-height:1.55; max-width:34em}
-  .card-links{display:flex; gap:10px; margin-top:18px; flex-wrap:wrap}
+  .card p{margin-top:9px; color:var(--muted); font-size:14.5px; line-height:1.5; max-width:34em}
+  .card-links{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap}
   .btn{
-    font-size:14px; font-weight:600; text-decoration:none; border-radius:999px; padding:9px 16px;
+    font-size:13px; font-weight:600; text-decoration:none; border-radius:999px; padding:7px 13px;
     transition:all .3s ease; display:inline-flex; align-items:center; gap:7px;
   }
   .btn-main{background:var(--text); color:var(--bg)}
@@ -221,12 +221,12 @@
         <div class="card-top">
           <h3>
             <span class="ordo-ico" aria-hidden="true">
-              <svg width="27" height="18" viewBox="6 22 88 56"><circle cx="34" cy="50" r="20" fill="none" stroke="#f5f5f4" stroke-width="11"/><circle cx="76" cy="50" r="13" fill="#0A84FF"/></svg>
+              <svg width="23" height="15" viewBox="6 22 88 56"><circle cx="34" cy="50" r="20" fill="none" stroke="#f5f5f4" stroke-width="11"/><circle cx="76" cy="50" r="13" fill="#0A84FF"/></svg>
             </span>
             Ordo
           </h3>
         </div>
-        <p class="swap" data-i18n="ordo_desc">Сайт дежурств для учебных групп: справедливая очередь, история и статистика.</p>
+        <p class="swap" data-i18n="ordo_desc">Сайт дежурств для учебных групп.</p>
         <div class="card-links">
           <a class="btn btn-main" href="https://ordo-site.github.io/" target="_blank" rel="noopener"><span class="swap" data-i18n="open">Открыть сайт</span> ↗</a>
           <span class="btn btn-ghost"><span class="swap" data-i18n="demo">Демо</span> · <span class="soon swap" data-i18n="soon">скоро</span></span>
@@ -279,13 +279,13 @@
   document.addEventListener('dragstart', e=>{ if (e.target.tagName === 'IMG') e.preventDefault(); });
   const I18N = {
     ru: { ptype:"Тип личности", portfolio:"Портфолио", live:"в проде",
-      ordo_desc:"Сайт дежурств для учебных групп: справедливая очередь, история и статистика.",
+      ordo_desc:"Сайт дежурств для учебных групп.",
       open:"Открыть сайт", demo:"Демо", soon:"скоро",
       socials:"Соцсети", ask:"Анонимный вопрос", askfrom:"50 ₽",
       askhint:"Есть вопрос? Пиши его в комментарии к оплате — ответ выложу прямо здесь, ниже. Имя можно не указывать.",
       qa:"Вопросы и ответы", qaempty:"Здесь может быть ответ на ваш вопрос…" },
     en: { ptype:"Personality type", portfolio:"Portfolio", live:"live",
-      ordo_desc:"A duty-roster site for study groups: a fair queue, history and stats.",
+      ordo_desc:"A duty-roster site for study groups.",
       open:"Visit site", demo:"Demo", soon:"soon",
       socials:"Socials", ask:"Anonymous question", askfrom:"50 ₽",
       askhint:"Got a question? Drop it in the payment comment — I'll post the answer right here below. No name needed.",
