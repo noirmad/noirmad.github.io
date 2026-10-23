@@ -42,6 +42,7 @@
   .cover img.ph{
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 24%;
     opacity:0; animation:coverin 3.4s cubic-bezier(.22,.8,.3,1) forwards;
+    transition:opacity .3s ease, transform .3s ease, filter .3s ease;
   }
   @keyframes coverin{from{transform:scale(1.07); opacity:0} 30%{opacity:1} to{transform:scale(1.01); opacity:1}}
   .cover::after{
@@ -316,7 +317,8 @@
     if (instant || !document.documentElement.classList.contains('ready')) { applyLang(l); return; }
     // freeze any block still entering: transitions must own the motion, not the entrance animation
     document.querySelectorAll('.reveal').forEach(el=>el.classList.add('settled'));
-    const els = [...document.querySelectorAll('.wrap .reveal, .wrap footer')];
+    const coverImg = document.querySelector('.cover img.ph');
+    const els = [...(coverImg ? [coverImg] : []), ...document.querySelectorAll('.wrap .reveal, .wrap footer')];
     els.forEach((el,i)=>{ el.style.transitionDelay = (i*32)+'ms'; el.classList.add('langhide'); });
     setTimeout(()=>{
       applyLang(l);
