@@ -45,6 +45,9 @@
     transition:opacity .3s ease, transform .3s ease, filter .3s ease;
   }
   @keyframes coverin{from{transform:scale(1.07); opacity:0} 30%{opacity:1} to{transform:scale(1.01); opacity:1}}
+  /* once the entrance settles, hand the cover over to plain transitions (same as .settled for blocks):
+     otherwise the finished animation's fill fights the language cascade and the cover snaps */
+  .cover img.ph.done{animation:none; opacity:1; transform:scale(1.01)}
   .cover::after{
     content:""; position:absolute; inset:0; pointer-events:none;
     background:linear-gradient(to bottom, rgba(0,0,0,.38) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 58%, #000 99%);
@@ -308,6 +311,11 @@
   document.querySelectorAll('.reveal').forEach(el=>
     el.addEventListener('animationend', ()=>el.classList.add('settled'), {once:true}));
   setTimeout(()=>document.querySelectorAll('.reveal').forEach(el=>el.classList.add('settled')), 4000);
+  const coverEl = document.querySelector('.cover img.ph');
+  if (coverEl) {
+    coverEl.addEventListener('animationend', ()=>coverEl.classList.add('done'), {once:true});
+    setTimeout(()=>coverEl.classList.add('done'), 7000);
+  }
   function setLang(l, instant){
     if (l === curLang && !instant) return;
     curLang = l;
@@ -317,6 +325,7 @@
     if (instant || !document.documentElement.classList.contains('ready')) { applyLang(l); return; }
     // freeze any block still entering: transitions must own the motion, not the entrance animation
     document.querySelectorAll('.reveal').forEach(el=>el.classList.add('settled'));
+    if (coverEl) coverEl.classList.add('done');
     const coverImg = document.querySelector('.cover img.ph');
     const els = [...(coverImg ? [coverImg] : []), ...document.querySelectorAll('.wrap .reveal, .wrap footer')];
     els.forEach((el,i)=>{ el.style.transitionDelay = (i*32)+'ms'; el.classList.add('langhide'); });
