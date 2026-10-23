@@ -263,17 +263,6 @@
           <span class="btn btn-ghost"><span class="swap" data-i18n="demo">Демо</span> · <span class="soon swap" data-i18n="soon">скоро</span></span>
         </div>
       </div>
-      <div class="card appcard" id="ankCard">
-        <a class="applink" href="https://www.anketka.ru/referral/14469932" target="_blank" rel="sponsored nofollow noopener" aria-label="Анкетка">
-          <img class="appicon" src="vizitka-assets/anketka-icon.jpg" alt="" draggable="false">
-          <span class="appmeta">
-            <span class="appnamerow"><span class="appname">Анкетка</span><span class="adpill swap" data-i18n="ad">Реклама</span></span>
-            <span class="appsub swap" data-i18n="ank_desc">Зарабатывай на опросах</span>
-            <span class="apprate"><span class="star">★</span> <span id="ankRate">4,4 · 4,8 тыс. оценок</span> · <span class="swap" data-i18n="ank_sub">Онлайн-опросы</span></span>
-          </span>
-          <span class="btn btn-main appbtn"><span id="ankBtn">Открыть</span></span>
-        </a>
-      </div>
     </section>
 
     <section class="reveal d6">
@@ -292,16 +281,30 @@
     </section>
 
     <section class="reveal d7">
+      <div class="slabel swap" data-i18n="qa">Вопросы и ответы</div>
+      <div class="qa-empty swap" data-i18n="qaempty">Здесь может быть ответ на твой вопрос…</div>
+    </section>
+
+    <section class="reveal d7">
       <a class="askrow" href="https://pay.cloudtips.ru/p/fc1e04b8" target="_blank" rel="noopener">
         <span class="swap" data-i18n="ask">Анонимный вопрос</span>
         <span class="askr"><span class="swap" data-i18n="askfrom">50 ₽</span> ↗</span>
       </a>
-      <p class="askhint swap" data-i18n="askhint">Есть вопрос? Пиши его в комментарии к оплате — ответ выложу прямо здесь, ниже. Имя можно не указывать.</p>
+      <p class="askhint swap" data-i18n="askhint">Есть вопрос? Пиши его в комментарии к оплате — отвечу в разделе выше. Имя можно не указывать.</p>
     </section>
 
     <section class="reveal d7">
-      <div class="slabel swap" data-i18n="qa">Вопросы и ответы</div>
-      <div class="qa-empty swap" data-i18n="qaempty">Здесь может быть ответ на твой вопрос…</div>
+      <div class="card appcard" id="ankCard">
+        <a class="applink" href="https://www.anketka.ru/referral/14469932" target="_blank" rel="sponsored nofollow noopener" aria-label="Анкетка">
+          <img class="appicon" src="vizitka-assets/anketka-icon.jpg" alt="" draggable="false">
+          <span class="appmeta">
+            <span class="appnamerow"><span class="appname">Анкетка</span><span class="adpill swap" data-i18n="ad">Реклама</span></span>
+            <span class="appsub swap" data-i18n="ank_desc">Зарабатывай на опросах</span>
+            <span class="apprate"><span class="star">★</span> <span id="ankRate">4,4 · 4,8 тыс. оценок</span> · <span class="swap" data-i18n="ank_sub">Онлайн-опросы</span></span>
+          </span>
+          <span class="btn btn-main appbtn"><span id="ankBtn">Открыть</span></span>
+        </a>
+      </div>
     </section>
 
     <footer>
@@ -325,14 +328,14 @@
       ad:"Реклама", ank_desc:"Зарабатывай на опросах", go:"Открыть", ank_sub:"Онлайн-опросы", ank_rate:"4,4",
       open:"Открыть сайт", demo:"Демо", soon:"скоро",
       socials:"Соцсети", ask:"Анонимный вопрос", askfrom:"50 ₽",
-      askhint:"Есть вопрос? Пиши его в комментарии к оплате — ответ выложу прямо здесь, ниже. Имя можно не указывать.",
+      askhint:"Есть вопрос? Пиши его в комментарии к оплате — отвечу в разделе выше. Имя можно не указывать.",
       qa:"Вопросы и ответы", qaempty:"Здесь может быть ответ на твой вопрос…" },
     en: { title:"Damir — business card", play:"Listen to the track", ptype:"Personality type", portfolio:"Portfolio", live:"live",
       ordo_desc:"A duty-roster site for study groups.",
       ad:"Ad", ank_desc:"Earn money taking surveys", go:"Open", ank_sub:"Online surveys", ank_rate:"4.4",
       open:"Visit site", demo:"Demo", soon:"soon",
       socials:"Socials", ask:"Anonymous question", askfrom:"50 ₽",
-      askhint:"Got a question? Drop it in the payment comment — I'll post the answer right here below. No name needed.",
+      askhint:"Got a question? Drop it in the payment comment — I'll answer in the section above. No name needed.",
       qa:"Questions & answers", qaempty:"The answer to your question could be here…" }
   };
   let curLang = 'ru';
@@ -348,9 +351,9 @@
     const R = { ios:{ru:'4,4 · 4,8 тыс. оценок', en:'4.4 · 4.8K ratings'},
                 android:{ru:'4,5 · 16 890 отзывов', en:'4.5 · 16,890 reviews'},
                 web:{ru:'4,4 · 4,8 тыс. оценок', en:'4.4 · 4.8K ratings'} };
-    const B = { ios:{ru:'Загрузить', en:'Get'}, android:{ru:'Установить', en:'Install'}, web:{ru:'Открыть', en:'Open'} };
+    const B = { ru:'Открыть', en:'Open' };
     const r = document.getElementById('ankRate'); if (r) r.textContent = R[ankStore][l];
-    const b = document.getElementById('ankBtn'); if (b) b.textContent = B[ankStore][l];
+    const b = document.getElementById('ankBtn'); if (b) b.textContent = B[l];
   }
   applyStoreText('ru');
   function applyLang(l){
