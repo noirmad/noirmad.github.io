@@ -321,10 +321,15 @@
       frame.style.opacity = '0';
       line.style.opacity = '1';
       setTimeout(function(){
-        line.style.transition = 'transform .4s cubic-bezier(.7,0,.84,0), opacity .12s ease .3s';
-        line.style.transform = 'scaleX(0)';
-        line.style.opacity = '0';
-        setTimeout(finish, 430);
+        /* полоска стягивается в точку до конца, точка догорает послесвечением — без раннего фейда */
+        line.style.transition = 'transform .55s cubic-bezier(.55,.06,.35,1), box-shadow .55s ease';
+        line.style.transform = 'scaleX(0.004)';
+        line.style.boxShadow = '0 0 22px 8px rgba(255,255,255,.85), 0 0 60px 22px rgba(255,255,255,.3)';
+        setTimeout(function(){
+          line.style.transition = 'opacity .22s ease';
+          line.style.opacity = '0';
+          setTimeout(finish, 240);
+        }, 590);
       }, 30);
     }, 235);
   }
