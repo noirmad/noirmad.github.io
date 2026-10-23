@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Damir — визитка</title>
-<meta name="description" content="Damir Tadzhiev — визитка: проекты, соцсети и анонимный вопрос.">
+<title>Damir</title>
+<meta name="description" content="Damir Tadzhiev — проекты, соцсети и анонимный вопрос.">
 <meta name="theme-color" content="#000000">
 <link rel="icon" type="image/png" href="vizitka-assets/favicon.png">
 <link rel="apple-touch-icon" href="vizitka-assets/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://noirmad.github.io/">
-<meta property="og:title" content="Damir Tadzhiev — визитка">
+<meta property="og:title" content="Damir Tadzhiev">
 <meta property="og:description" content="Проекты, соцсети и анонимный вопрос.">
 <meta property="og:image" content="https://noirmad.github.io/vizitka-assets/og.jpg">
 <meta property="og:image:width" content="1200">
@@ -52,7 +52,7 @@
   #splash{position:fixed; inset:0; z-index:300; background:#000; cursor:pointer}
   #spFrame{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; will-change:transform,filter}
   #spNoise{position:absolute; inset:0; width:100%; height:100%; opacity:0; filter:blur(.6px) contrast(1.05)}
-  #spLetter{position:relative; font-family:'Old London',serif; font-size:52vmin; line-height:1; color:#f4f4f4; opacity:0;
+  #spLetter{position:relative; top:-0.18em; font-family:'Old London',serif; font-size:52vmin; line-height:1; color:#f4f4f4; opacity:0;
     text-shadow:0 0 22px rgba(255,255,255,.35), 0 0 60px rgba(255,255,255,.12)}
   #spLetter .tear{position:absolute; inset:0; color:#f4f4f4; opacity:0; clip-path:inset(38% 0 44% 0); transform:translateX(-6px)}
   #spScan{position:absolute; inset:0; pointer-events:none; opacity:.38; mix-blend-mode:multiply;
@@ -275,6 +275,8 @@
   var q = qs.get('splash'); if (q === 'full' || q === 'short' || q === 'off') mode = q;
   var root = document.getElementById('splash');
   if (mode === 'off'){ root.remove(); window.__splashHold = false; return; }
+  /* портал наружу: body до готовности стоит на opacity:0 (pagein на паузе) и прятал бы сплэш вместе со страницей */
+  document.documentElement.appendChild(root);
   try { localStorage.setItem('viz-splash', '' + Date.now()); } catch(e){}
   var frame = document.getElementById('spFrame'), cv = document.getElementById('spNoise'),
       letter = document.getElementById('spLetter'), tear = letter.querySelector('.tear'),
@@ -484,14 +486,14 @@
   document.addEventListener('contextmenu', e=>{ if (e.target.tagName === 'IMG') e.preventDefault(); });
   document.addEventListener('dragstart', e=>{ if (e.target.tagName === 'IMG') e.preventDefault(); });
   const I18N = {
-    ru: { title:"Damir — визитка", play:"Слушать трек", ptype:"Тип личности", portfolio:"Портфолио", live:"в проде",
+    ru: { title:"Damir", play:"Слушать трек", ptype:"Тип личности", portfolio:"Портфолио", live:"в проде",
       ordo_desc:"Сайт дежурств для учебных групп.",
       ad:"Реклама", ank_desc:"Зарабатывай на опросах", go:"Открыть", ank_sub:"Онлайн-опросы", ank_rate:"4,4",
       open:"Открыть сайт", demo:"Демо", soon:"скоро",
       socials:"Соцсети", ask:"Анонимный вопрос", askfrom:"50 ₽",
       askhint:"Есть вопрос? Пиши его в комментарии к оплате — отвечу в разделе выше. Имя можно не указывать.",
       qa:"Вопросы и ответы", qaempty:"Здесь может быть ответ на твой вопрос…" },
-    en: { title:"Damir — business card", play:"Listen to the track", ptype:"Personality type", portfolio:"Portfolio", live:"live",
+    en: { title:"Damir", play:"Listen to the track", ptype:"Personality type", portfolio:"Portfolio", live:"live",
       ordo_desc:"A duty-roster site for study groups.",
       ad:"Ad", ank_desc:"Earn money taking surveys", go:"Open", ank_sub:"Online surveys", ank_rate:"4.4",
       open:"Visit site", demo:"Demo", soon:"soon",
