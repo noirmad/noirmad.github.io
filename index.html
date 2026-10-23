@@ -183,6 +183,11 @@
   .apprate{font-size:12.5px; color:var(--faint)}
   .apprate .star{color:#FFD60A}
   .appbtn{flex:none}
+  /* native store flavour per visitor platform (class set by JS) */
+  .store-ios .appbtn{background:#2c2c2e; color:#0A84FF; text-transform:uppercase; letter-spacing:.03em; font-weight:700}
+  .store-android .appbtn{background:#a8c7fa; color:#0b57d0; font-weight:700}
+  .store-android .appicon{border-radius:15px}
+  .store-android .apprate .star{color:#00A173}
   .card-links{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap}
   .btn{
     font-size:13px; font-weight:600; text-decoration:none; border-radius:999px; padding:7px 13px;
@@ -258,15 +263,15 @@
           <span class="btn btn-ghost"><span class="swap" data-i18n="demo">Демо</span> · <span class="soon swap" data-i18n="soon">скоро</span></span>
         </div>
       </div>
-      <div class="card appcard">
+      <div class="card appcard" id="ankCard">
         <a class="applink" href="https://www.anketka.ru/referral/14469932" target="_blank" rel="sponsored nofollow noopener" aria-label="Анкетка">
           <img class="appicon" src="vizitka-assets/anketka-icon.jpg" alt="" draggable="false">
           <span class="appmeta">
             <span class="appnamerow"><span class="appname">Анкетка</span><span class="adpill swap" data-i18n="ad">Реклама</span></span>
             <span class="appsub swap" data-i18n="ank_desc">Зарабатывай на опросах</span>
-            <span class="apprate"><span class="star">★</span> <span class="swap" data-i18n="ank_rate">4,4</span> · <span class="swap" data-i18n="ank_sub">Онлайн-опросы</span></span>
+            <span class="apprate"><span class="star">★</span> <span id="ankRate">4,4 · 4,8 тыс. оценок</span> · <span class="swap" data-i18n="ank_sub">Онлайн-опросы</span></span>
           </span>
-          <span class="btn btn-main appbtn"><span class="swap" data-i18n="go">Открыть</span></span>
+          <span class="btn btn-main appbtn"><span id="ankBtn">Открыть</span></span>
         </a>
       </div>
     </section>
@@ -331,12 +336,30 @@
       qa:"Questions & answers", qaempty:"The answer to your question could be here…" }
   };
   let curLang = 'ru';
+  // Анкетка card: dress it as the visitor's own store (App Store on iOS, Google Play on Android)
+  const ankStore = (function(){
+    const ua = navigator.userAgent || '';
+    if (/Android/i.test(ua)) return 'android';
+    if (/iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'ios';
+    return 'web';
+  })();
+  (function(){ const c = document.getElementById('ankCard'); if (c) c.classList.add('store-' + ankStore); })();
+  function applyStoreText(l){
+    const R = { ios:{ru:'4,4 · 4,8 тыс. оценок', en:'4.4 · 4.8K ratings'},
+                android:{ru:'4,5 · 16 890 отзывов', en:'4.5 · 16,890 reviews'},
+                web:{ru:'4,4 · 4,8 тыс. оценок', en:'4.4 · 4.8K ratings'} };
+    const B = { ios:{ru:'Загрузить', en:'Get'}, android:{ru:'Установить', en:'Install'}, web:{ru:'Открыть', en:'Open'} };
+    const r = document.getElementById('ankRate'); if (r) r.textContent = R[ankStore][l];
+    const b = document.getElementById('ankBtn'); if (b) b.textContent = B[ankStore][l];
+  }
+  applyStoreText('ru');
   function applyLang(l){
     document.querySelectorAll('[data-i18n]').forEach(el=>{ el.innerHTML = I18N[l][el.dataset.i18n]; });
     document.getElementById('quoteImg').hidden = (l === 'en');
     document.getElementById('quoteEn').hidden = (l !== 'en');
     document.title = I18N[l].title;
     document.getElementById('playBtn').setAttribute('aria-label', I18N[l].play);
+    applyStoreText(l);
   }
   // after the entrance, freeze each block at its final state so transitions can take over
   document.querySelectorAll('.reveal').forEach(el=>
