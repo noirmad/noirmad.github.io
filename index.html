@@ -61,10 +61,7 @@
     background:linear-gradient(to bottom,transparent,rgba(255,255,255,.04),transparent)}
   #spVig{position:absolute; inset:0; pointer-events:none;
     background:radial-gradient(120% 90% at 50% 50%,transparent 55%,rgba(0,0,0,.78) 100%)}
-  #spLine{position:absolute; left:0; right:0; top:50%; height:2px; margin-top:-1px; background:#fff; opacity:0; pointer-events:none;
-    box-shadow:0 0 16px 5px rgba(255,255,255,.65), 0 0 46px 14px rgba(255,255,255,.22)}
-  #spDot{position:absolute; left:50%; top:50%; width:120px; height:120px; margin:-60px 0 0 -60px; border-radius:50%; opacity:0; pointer-events:none;
-    background:radial-gradient(circle,rgba(255,255,255,.95) 0 5px,rgba(255,255,255,.38) 16px,rgba(255,255,255,0) 58px)}
+  #spFin{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
 
   /* ---------- cover: social banner 3:1, no blur ---------- */
   .cover{position:relative; aspect-ratio:3/1; max-height:440px; min-height:200px; overflow:hidden; background:#000}
@@ -265,8 +262,7 @@
   <div id="spScan"></div>
   <div id="spRoll"></div>
   <div id="spVig"></div>
-  <div id="spLine"></div>
-  <div id="spDot"></div>
+  <canvas id="spFin"></canvas>
 </div>
 <script>
 /* splash engine: holds the entrance gate until the CRT-off finishes (or the user taps) */
@@ -283,8 +279,7 @@
   try { localStorage.setItem('viz-splash', '' + Date.now()); } catch(e){}
   var frame = document.getElementById('spFrame'), cv = document.getElementById('spNoise'),
       letter = document.getElementById('spLetter'), tear = letter.querySelector('.tear'),
-      roll = document.getElementById('spRoll'), line = document.getElementById('spLine'),
-      dot = document.getElementById('spDot');
+      roll = document.getElementById('spRoll'), fin = document.getElementById('spFin');
   var cx = cv.getContext('2d');
   var reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   document.body.style.overflow = 'hidden';
@@ -323,23 +318,39 @@
     frame.style.transform = 'scaleY(0.006)';
     setTimeout(function(){
       frame.style.opacity = '0';
-      line.style.opacity = '1';
-      setTimeout(function(){
-        /* полоска стягивается до конца со своим обычным свечением; дальше — отдельная круглая точка-«послесвечение» */
-        line.style.transition = 'transform .45s cubic-bezier(.55,.06,.35,1)';
-        line.style.transform = 'scaleX(0)';
-        setTimeout(function(){
-          line.style.opacity = '0';
-          dot.style.opacity = '1';
-          setTimeout(function(){
-            dot.style.transition = 'opacity .3s ease, transform .3s ease';
-            dot.style.opacity = '0';
-            dot.style.transform = 'scale(.5)';
-            setTimeout(finish, 320);
-          }, 150);
-        }, 470);
-      }, 30);
+      finale();
     }, 235);
+  }
+  /* финал одним непрерывным движением на canvas: полоска и её свечение сжимаются вместе до точки, точка догорает */
+  function finale(){
+    var W = innerWidth, H = innerHeight;
+    fin.width = W; fin.height = H;
+    var fx2 = fin.getContext('2d');
+    var cxp = W / 2, cyp = H / 2;
+    var t0 = performance.now(), DUR = 640;
+    function step(now){
+      if (done) return;
+      var p = Math.min(1, (now - t0) / DUR);
+      fx2.clearRect(0, 0, W, H);
+      var s = p < 0.72 ? (p / 0.72) : 1;
+      var e = s * s * (3 - 2 * s);
+      var w = Math.max(4, W * (1 - e));
+      var ry = 26 - 17 * e;
+      var a = p < 0.72 ? 1 : 1 - (p - 0.72) / 0.28;
+      if (a > 0){
+        var rx = w / 2 + 16 * (1 - e) + 8;
+        var g = fx2.createRadialGradient(cxp, cyp, 0, cxp, cyp, rx);
+        g.addColorStop(0, 'rgba(255,255,255,' + (0.55 * a).toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        fx2.save(); fx2.translate(cxp, cyp); fx2.scale(1, ry / rx); fx2.translate(-cxp, -cyp);
+        fx2.fillStyle = g; fx2.beginPath(); fx2.arc(cxp, cyp, rx, 0, 7); fx2.fill(); fx2.restore();
+        fx2.fillStyle = 'rgba(255,255,255,' + a.toFixed(3) + ')';
+        if (p < 0.72) fx2.fillRect(cxp - w / 2, cyp - 1, w, 2);
+        else { fx2.beginPath(); fx2.arc(cxp, cyp, 2.2, 0, 7); fx2.fill(); }
+      }
+      if (p < 1) requestAnimationFrame(step); else finish();
+    }
+    requestAnimationFrame(step);
   }
   function tryOff(){
     if (window.__pageReady) { crtOff(); return; }
