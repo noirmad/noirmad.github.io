@@ -88,9 +88,15 @@
   .playbtn{
     flex:none; margin-top:12px; width:46px; height:46px; border-radius:50%;
     border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.03);
-    color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; position:relative;
     -webkit-tap-highlight-color:transparent; transition:border-color .25s ease, background .25s ease, transform .15s ease;
   }
+  .playbtn.loading::after{
+    content:""; position:absolute; inset:-1px; border-radius:50%;
+    border:1px solid transparent; border-top-color:rgba(255,255,255,.85);
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
   .playbtn:active{transform:scale(.93)}
   .playbtn svg{width:17px; height:17px; fill:currentColor; display:block}
   .playbtn .ic-pause{display:none}
@@ -259,7 +265,7 @@
 
     <section class="reveal d7">
       <div class="slabel swap" data-i18n="qa">Вопросы и ответы</div>
-      <div class="qa-empty swap" data-i18n="qaempty">Здесь может быть ответ на ваш вопрос…</div>
+      <div class="qa-empty swap" data-i18n="qaempty">Здесь может быть ответ на твой вопрос…</div>
     </section>
 
     <footer>
@@ -283,7 +289,7 @@
       open:"Открыть сайт", demo:"Демо", soon:"скоро",
       socials:"Соцсети", ask:"Анонимный вопрос", askfrom:"50 ₽",
       askhint:"Есть вопрос? Пиши его в комментарии к оплате — ответ выложу прямо здесь, ниже. Имя можно не указывать.",
-      qa:"Вопросы и ответы", qaempty:"Здесь может быть ответ на ваш вопрос…" },
+      qa:"Вопросы и ответы", qaempty:"Здесь может быть ответ на твой вопрос…" },
     en: { ptype:"Personality type", portfolio:"Portfolio", live:"live",
       ordo_desc:"A duty-roster site for study groups.",
       open:"Visit site", demo:"Demo", soon:"soon",
@@ -333,15 +339,16 @@
   (function(){
     const btn = document.getElementById('playBtn');
     const audio = new Audio();
-    audio.preload = 'none';
+    audio.preload = 'auto';
     audio.src = 'vizitka-assets/track.m4a';
     btn.addEventListener('click', ()=>{
-      if (audio.paused) { audio.play().catch(()=>{}); }
+      if (audio.paused) { btn.classList.add('loading'); audio.play().catch(()=>btn.classList.remove('loading')); }
       else { audio.pause(); }
     });
-    audio.addEventListener('play',  ()=>btn.classList.add('playing'));
-    audio.addEventListener('pause', ()=>btn.classList.remove('playing'));
-    audio.addEventListener('ended', ()=>btn.classList.remove('playing'));
+    audio.addEventListener('playing', ()=>{ btn.classList.remove('loading'); btn.classList.add('playing'); });
+    audio.addEventListener('pause', ()=>{ btn.classList.remove('playing'); btn.classList.remove('loading'); });
+    audio.addEventListener('ended', ()=>{ btn.classList.remove('playing'); btn.classList.remove('loading'); });
+    audio.addEventListener('error', ()=>btn.classList.remove('loading'));
   })();
 </script>
 </body>
