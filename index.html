@@ -24,7 +24,7 @@
   }
   @keyframes pagein{to{opacity:1}}
   img{-webkit-user-drag:none; user-select:none; -webkit-user-select:none}
-  .cover img.ph,.avatar,.quote-img{pointer-events:none; -webkit-touch-callout:none}
+  .cover img.ph,.avatar,.quote-img,.appicon{pointer-events:none; -webkit-touch-callout:none}
   ::selection{background:var(--text);color:var(--bg)}
   .wrap{max-width:680px; margin:0 auto; padding:0 22px}
   /* language switch: focus-pull cascade (blur + sink, staggered) */
@@ -167,6 +167,22 @@
   .live i{width:5px;height:5px;border-radius:50%;background:#4ade80; animation:pulse 2.2s ease infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
   .card p{margin-top:9px; color:var(--muted); font-size:14.5px; line-height:1.5; max-width:34em}
+  .card + .card{margin-top:14px}
+  .adpill{
+    font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--faint); border:1px solid var(--line); border-radius:999px; padding:3px 9px; flex:none;
+  }
+  /* ad card styled as an app-store listing row */
+  .appcard{position:relative; padding:16px 18px}
+  .applink{display:flex; align-items:center; gap:14px; text-decoration:none; color:var(--text)}
+  .appicon{width:54px; height:54px; border-radius:13px; flex:none; display:block}
+  .appmeta{display:flex; flex-direction:column; gap:1px; flex:1; min-width:0}
+  .appname{font-size:17px; font-weight:700; letter-spacing:-.01em}
+  .appsub{font-size:13px; color:var(--muted)}
+  .apprate{font-size:12.5px; color:var(--faint)}
+  .apprate .star{color:#FFD60A}
+  .appbtn{flex:none}
+  .appcard .adpill{position:absolute; top:12px; right:12px}
   .card-links{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap}
   .btn{
     font-size:13px; font-weight:600; text-decoration:none; border-radius:999px; padding:7px 13px;
@@ -242,6 +258,18 @@
           <span class="btn btn-ghost"><span class="swap" data-i18n="demo">Демо</span> · <span class="soon swap" data-i18n="soon">скоро</span></span>
         </div>
       </div>
+      <div class="card appcard">
+        <a class="applink" href="https://www.anketka.ru/referral/14469932" target="_blank" rel="sponsored nofollow noopener" aria-label="Анкетка">
+          <img class="appicon" src="vizitka-assets/anketka-icon.jpg" alt="" draggable="false">
+          <span class="appmeta">
+            <span class="appname">Анкетка</span>
+            <span class="appsub swap" data-i18n="ank_sub">Онлайн-опросы</span>
+            <span class="apprate"><span class="star">★</span> <span class="swap" data-i18n="ank_rate">4,4</span> · <span class="swap" data-i18n="ank_desc">Зарабатывай на опросах</span></span>
+          </span>
+          <span class="btn btn-main appbtn"><span class="swap" data-i18n="go">Открыть</span></span>
+        </a>
+        <span class="adpill swap" data-i18n="ad">Реклама</span>
+      </div>
     </section>
 
     <section class="reveal d6">
@@ -290,12 +318,14 @@
   const I18N = {
     ru: { title:"Damir — визитка", play:"Слушать трек", ptype:"Тип личности", portfolio:"Портфолио", live:"в проде",
       ordo_desc:"Сайт дежурств для учебных групп.",
+      ad:"Реклама", ank_desc:"Зарабатывай на опросах", go:"Открыть", ank_sub:"Онлайн-опросы", ank_rate:"4,4",
       open:"Открыть сайт", demo:"Демо", soon:"скоро",
       socials:"Соцсети", ask:"Анонимный вопрос", askfrom:"50 ₽",
       askhint:"Есть вопрос? Пиши его в комментарии к оплате — ответ выложу прямо здесь, ниже. Имя можно не указывать.",
       qa:"Вопросы и ответы", qaempty:"Здесь может быть ответ на твой вопрос…" },
     en: { title:"Damir — business card", play:"Listen to the track", ptype:"Personality type", portfolio:"Portfolio", live:"live",
       ordo_desc:"A duty-roster site for study groups.",
+      ad:"Ad", ank_desc:"Earn money taking surveys", go:"Open", ank_sub:"Online surveys", ank_rate:"4.4",
       open:"Visit site", demo:"Demo", soon:"soon",
       socials:"Socials", ask:"Anonymous question", askfrom:"50 ₽",
       askhint:"Got a question? Drop it in the payment comment — I'll post the answer right here below. No name needed.",
