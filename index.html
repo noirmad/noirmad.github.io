@@ -288,13 +288,13 @@
   document.addEventListener('contextmenu', e=>{ if (e.target.tagName === 'IMG') e.preventDefault(); });
   document.addEventListener('dragstart', e=>{ if (e.target.tagName === 'IMG') e.preventDefault(); });
   const I18N = {
-    ru: { ptype:"Тип личности", portfolio:"Портфолио", live:"в проде",
+    ru: { title:"Damir — визитка", play:"Слушать трек", ptype:"Тип личности", portfolio:"Портфолио", live:"в проде",
       ordo_desc:"Сайт дежурств для учебных групп.",
       open:"Открыть сайт", demo:"Демо", soon:"скоро",
       socials:"Соцсети", ask:"Анонимный вопрос", askfrom:"50 ₽",
       askhint:"Есть вопрос? Пиши его в комментарии к оплате — ответ выложу прямо здесь, ниже. Имя можно не указывать.",
       qa:"Вопросы и ответы", qaempty:"Здесь может быть ответ на твой вопрос…" },
-    en: { ptype:"Personality type", portfolio:"Portfolio", live:"live",
+    en: { title:"Damir — business card", play:"Listen to the track", ptype:"Personality type", portfolio:"Portfolio", live:"live",
       ordo_desc:"A duty-roster site for study groups.",
       open:"Visit site", demo:"Demo", soon:"soon",
       socials:"Socials", ask:"Anonymous question", askfrom:"50 ₽",
@@ -306,6 +306,8 @@
     document.querySelectorAll('[data-i18n]').forEach(el=>{ el.innerHTML = I18N[l][el.dataset.i18n]; });
     document.getElementById('quoteImg').hidden = (l === 'en');
     document.getElementById('quoteEn').hidden = (l !== 'en');
+    document.title = I18N[l].title;
+    document.getElementById('playBtn').setAttribute('aria-label', I18N[l].play);
   }
   // after the entrance, freeze each block at its final state so transitions can take over
   document.querySelectorAll('.reveal').forEach(el=>
