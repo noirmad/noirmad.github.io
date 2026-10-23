@@ -333,19 +333,21 @@
       var p = Math.min(1, (now - t0) / DUR);
       fx2.clearRect(0, 0, W, H);
       var s = p < 0.72 ? (p / 0.72) : 1;
-      var e = s * s * (3 - 2 * s);
+      var e = Math.pow(s, 2.3);               /* стягивание ускоряется к концу — разряд, а не линейное скольжение */
       var w = Math.max(4, W * (1 - e));
-      var ry = 26 - 17 * e;
-      var a = p < 0.72 ? 1 : 1 - (p - 0.72) / 0.28;
+      var ry = 15 - 7 * e;
+      var q = p < 0.72 ? 0 : (p - 0.72) / 0.28;
+      var a = p < 0.72 ? 1 : (1 - q) * (0.84 + 0.16 * Math.sin(q * 42) * (1 - q));  /* точка догорает с подрагиванием */
+      var jy = e > 0.55 && p < 0.72 ? (Math.random() * 1.2 - 0.6) : 0;              /* луч теряет стабильность */
       if (a > 0){
-        var rx = w / 2 + 16 * (1 - e) + 8;
-        var g = fx2.createRadialGradient(cxp, cyp, 0, cxp, cyp, rx);
-        g.addColorStop(0, 'rgba(255,255,255,' + (0.55 * a).toFixed(3) + ')');
+        var rx = w / 2 + 6 * (1 - e) + 7;
+        var g = fx2.createRadialGradient(cxp, cyp + jy, 0, cxp, cyp + jy, rx);
+        g.addColorStop(0, 'rgba(255,255,255,' + ((0.34 + 0.42 * e) * a).toFixed(3) + ')');  /* энергия уплотняется — свечение ярче */
         g.addColorStop(1, 'rgba(255,255,255,0)');
-        fx2.save(); fx2.translate(cxp, cyp); fx2.scale(1, ry / rx); fx2.translate(-cxp, -cyp);
-        fx2.fillStyle = g; fx2.beginPath(); fx2.arc(cxp, cyp, rx, 0, 7); fx2.fill(); fx2.restore();
+        fx2.save(); fx2.translate(cxp, cyp + jy); fx2.scale(1, ry / rx); fx2.translate(-cxp, -(cyp + jy));
+        fx2.fillStyle = g; fx2.beginPath(); fx2.arc(cxp, cyp + jy, rx, 0, 7); fx2.fill(); fx2.restore();
         fx2.fillStyle = 'rgba(255,255,255,' + a.toFixed(3) + ')';
-        if (p < 0.72) fx2.fillRect(cxp - w / 2, cyp - 1, w, 2);
+        if (p < 0.72) fx2.fillRect(cxp - w / 2, cyp + jy - 1, w, 2);
         else { fx2.beginPath(); fx2.arc(cxp, cyp, 2.2, 0, 7); fx2.fill(); }
       }
       if (p < 1) requestAnimationFrame(step); else finish();
