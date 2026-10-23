@@ -180,7 +180,7 @@
 
   footer{
     padding:46px 0 26px; color:var(--faint); font-size:13px;
-    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    display:flex; justify-content:center; gap:14px; flex-wrap:wrap;
   }
   @media (prefers-reduced-motion:reduce){
     body,.reveal,.cover img.ph{animation:none; opacity:1; transform:none; filter:none}
@@ -254,12 +254,12 @@
         <span class="swap" data-i18n="ask">Анонимный вопрос</span>
         <span class="askr"><span class="swap" data-i18n="askfrom">50 ₽</span> ↗</span>
       </a>
-      <p class="askhint swap" data-i18n="askhint">Вопрос напиши в комментарии к оплате. Ответ появится ниже, имя указывать необязательно.</p>
+      <p class="askhint swap" data-i18n="askhint">Есть вопрос? Пиши его в комментарии к оплате — ответ выложу прямо здесь, ниже. Имя можно не указывать.</p>
     </section>
 
     <section class="reveal d7">
       <div class="slabel swap" data-i18n="qa">Вопросы и ответы</div>
-      <div class="qa-empty swap" data-i18n="qaempty">Здесь может быть твой вопрос…</div>
+      <div class="qa-empty swap" data-i18n="qaempty">Здесь может быть ОТВЕТ на ваш вопрос</div>
     </section>
 
     <footer>
@@ -282,14 +282,14 @@
       ordo_desc:"Сайт дежурств для учебных групп: справедливая очередь, история и статистика.",
       open:"Открыть сайт", demo:"Демо", soon:"скоро",
       socials:"Соцсети", ask:"Анонимный вопрос", askfrom:"50 ₽",
-      askhint:"Вопрос напиши в комментарии к оплате. Ответ появится ниже, имя указывать необязательно.",
-      qa:"Вопросы и ответы", qaempty:"Здесь может быть твой вопрос…" },
+      askhint:"Есть вопрос? Пиши его в комментарии к оплате — ответ выложу прямо здесь, ниже. Имя можно не указывать.",
+      qa:"Вопросы и ответы", qaempty:"Здесь может быть ОТВЕТ на ваш вопрос" },
     en: { ptype:"Personality type", portfolio:"Portfolio", live:"live",
       ordo_desc:"A duty-roster site for study groups: a fair queue, history and stats.",
       open:"Visit site", demo:"Demo", soon:"soon",
       socials:"Socials", ask:"Anonymous question", askfrom:"50 ₽",
-      askhint:"Put your question in the payment comment. The answer will appear below; a name is optional.",
-      qa:"Questions & answers", qaempty:"Your question could be here…" }
+      askhint:"Got a question? Drop it in the payment comment — I'll post the answer right here below. No name needed.",
+      qa:"Questions & answers", qaempty:"The ANSWER to your question could be here" }
   };
   let curLang = 'ru';
   function applyLang(l){
