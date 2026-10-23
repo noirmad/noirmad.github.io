@@ -175,14 +175,14 @@
   /* ad card styled as an app-store listing row */
   .appcard{position:relative; padding:16px 18px}
   .applink{display:flex; align-items:center; gap:14px; text-decoration:none; color:var(--text)}
-  .appicon{width:54px; height:54px; border-radius:13px; flex:none; display:block}
+  .appicon{width:48px; height:48px; border-radius:12px; flex:none; display:block}
   .appmeta{display:flex; flex-direction:column; gap:1px; flex:1; min-width:0}
+  .appnamerow{display:flex; align-items:center; justify-content:space-between; gap:10px}
   .appname{font-size:17px; font-weight:700; letter-spacing:-.01em}
   .appsub{font-size:13px; color:var(--muted)}
   .apprate{font-size:12.5px; color:var(--faint)}
   .apprate .star{color:#FFD60A}
   .appbtn{flex:none}
-  .appcard .adpill{position:absolute; top:12px; right:12px}
   .card-links{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap}
   .btn{
     font-size:13px; font-weight:600; text-decoration:none; border-radius:999px; padding:7px 13px;
@@ -262,13 +262,12 @@
         <a class="applink" href="https://www.anketka.ru/referral/14469932" target="_blank" rel="sponsored nofollow noopener" aria-label="Анкетка">
           <img class="appicon" src="vizitka-assets/anketka-icon.jpg" alt="" draggable="false">
           <span class="appmeta">
-            <span class="appname">Анкетка</span>
-            <span class="appsub swap" data-i18n="ank_sub">Онлайн-опросы</span>
-            <span class="apprate"><span class="star">★</span> <span class="swap" data-i18n="ank_rate">4,4</span> · <span class="swap" data-i18n="ank_desc">Зарабатывай на опросах</span></span>
+            <span class="appnamerow"><span class="appname">Анкетка</span><span class="adpill swap" data-i18n="ad">Реклама</span></span>
+            <span class="appsub swap" data-i18n="ank_desc">Зарабатывай на опросах</span>
+            <span class="apprate"><span class="star">★</span> <span class="swap" data-i18n="ank_rate">4,4</span> · <span class="swap" data-i18n="ank_sub">Онлайн-опросы</span></span>
           </span>
           <span class="btn btn-main appbtn"><span class="swap" data-i18n="go">Открыть</span></span>
         </a>
-        <span class="adpill swap" data-i18n="ad">Реклама</span>
       </div>
     </section>
 
