@@ -617,13 +617,18 @@
       try { localStorage.setItem(GAP_KEY, String(lastApiMem)); } catch(e){}
     }
     // overheating cooldown: after a 429 the button shows a live 60s countdown
-    // and stays disabled until it ends — the wait is advice with force, not decoration
+    // and stays disabled until it ends — the wait is advice with force, not decoration.
+    // The countdown is wall-clock based, not a tick counter: background tabs get
+    // their intervals throttled by the browser, so a plain counter would freeze
+    // while away and over-wait on return. Deriving the remainder from the
+    // deadline each tick makes the button free exactly when the real gap ends.
     let coolTimer = null;
     function fmtCool(s){ return Math.floor(s/60) + ':' + String(s%60).padStart(2, '0'); }
     function startCooldown(seconds){
       if (coolTimer) clearInterval(coolTimer);
-      let left = seconds;
+      const end = Date.now() + seconds * 1000;
       const tick = ()=>{
+        const left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
         if (left <= 0) {
           clearInterval(coolTimer); coolTimer = null;
           askBtn.textContent = I18N[curLang].ball_ask;
@@ -631,7 +636,6 @@
           return;
         }
         askBtn.textContent = (curLang === 'en' ? 'Ask in ' : 'Спросить через ') + fmtCool(left);
-        left--;
       };
       askBtn.disabled = true;
       tick();
