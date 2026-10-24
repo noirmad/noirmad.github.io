@@ -274,9 +274,14 @@
     0%,100%{transform:scale(1)}
     50%{transform:scale(1.02)}
   }
+  /* blushing: a red tint fades in over the white ball when it refuses */
+  .ball::after{content:""; position:absolute; inset:0; border-radius:50%;
+    background:radial-gradient(circle at 34% 30%, #ff9a9a 0%, #e5484d 48%, #8f1d22 100%);
+    opacity:0; transition:opacity .4s ease; z-index:1}
+  .ball.blush::after{opacity:1}
   /* the answer pops out of the ball as its own dark window */
   .ball-window{
-    position:absolute; left:50%; top:50%; width:182px; max-width:76vw; padding:14px 16px;
+    position:absolute; left:50%; top:50%; width:182px; max-width:76vw; padding:14px 16px; z-index:2;
     background:#0a0a0c; border:1px solid rgba(255,255,255,.28); border-radius:16px;
     text-align:center; font-size:14px; line-height:1.45; font-weight:600; color:var(--text);
     box-shadow:0 14px 40px rgba(0,0,0,.85);
@@ -285,7 +290,7 @@
   }
   .ball-window.show{opacity:1; transform:translate(-50%,-50%) scale(1)}
   /* the face: two black oval eyes that dart around as a pair and blink together */
-  .ball-eyes{display:flex; gap:22px; transition:opacity .3s ease; animation:eyedart 9s ease-in-out infinite}
+  .ball-eyes{position:relative; z-index:2; display:flex; gap:22px; transition:opacity .3s ease; animation:eyedart 9s ease-in-out infinite}
   .ball-eyes.hide{opacity:0}
   .eye{width:14px; height:38px; border-radius:50%; background:#000; animation:eyeblink 5s infinite}
   @keyframes eyedart{
@@ -542,6 +547,7 @@
     const PERSONA = 'Ты предсказательный шар. Отвечай только одной короткой фразой на русском, спокойным отстранённым тоном, реалистично и по делу, без мистики, метафор и поэзии, без объяснений.';
     // no canned answers: a failed API call is honestly a tired ball, not a fake prediction
     const TIRED = {ru:'Шар устал, зайдите позже.', en:'The ball is tired, come back later.'};
+    const REFUSAL = {ru:'Сначала задай вопрос — на пустоту не отвечаю.', en:'Ask a question first — I don’t answer emptiness.'};
     let busy = false;
     function showAnswer(text){
       if (text.length > 110) {
@@ -552,13 +558,19 @@
       eyes.classList.add('hide');
       ballWindow.classList.add('show');
     }
-    function showEight(){ eyes.classList.remove('hide'); ballWindow.classList.remove('show'); }
+    function showEight(){ eyes.classList.remove('hide'); ballWindow.classList.remove('show'); ball.classList.remove('blush'); }
     async function ask(){
       if (busy) return; busy = true; askBtn.disabled = true;
       ball.classList.remove('shaking'); void ball.offsetWidth; ball.classList.add('shaking');
       showEight();
       const q = input.value.trim();
-      const prompt = PERSONA + (q ? ' Вопрос: ' + q : ' Дай одно короткое предсказание.');
+      if (!q) {
+        // alive refusal: the ball blushes, shakes, and answers through the quote window
+        ball.classList.add('blush');
+        setTimeout(()=>{ showAnswer(REFUSAL[curLang] || REFUSAL.ru); ball.classList.remove('shaking'); busy = false; askBtn.disabled = false; }, 900);
+        return;
+      }
+      const prompt = PERSONA + ' Вопрос: ' + q;
       // one retry: a single network blip must not pose as a tired ball
       let answer = null;
       for (let attempt = 0; attempt < 2 && !answer; attempt++) {
@@ -583,6 +595,8 @@
     askBtn.addEventListener('click', ask);
     ball.addEventListener('click', ask);
     input.addEventListener('keydown', e=>{ if (e.key==='Enter') ask(); });
+    // the ball calms down as soon as a real question starts appearing
+    input.addEventListener('input', ()=>ball.classList.remove('blush'));
   })();
 </script>
 </body>
