@@ -321,11 +321,21 @@
     92%,94%{transform:scaleY(.08)}
   }
   /* moods: thinking is eyes only (no shake); anger is shake + blush + narrowed tilted eyes */
-  .ball.thinking .ball-eyes{animation:eyethink 2.2s ease-in-out infinite}
+  .ball.thinking .ball-eyes{animation:eyethink 1.6s ease-in-out infinite}
   @keyframes eyethink{
-    0%,100%{transform:translate(0,-4px)}
-    25%{transform:translate(-7px,-5px)} 50%{transform:translate(7px,-4px)} 75%{transform:translate(0,-6px)}
+    0%,100%{transform:translate(0,-8px)}
+    25%{transform:translate(-6px,-8px)} 50%{transform:translate(6px,-8px)} 75%{transform:translate(-3px,-9px)}
   }
+  /* typing indicator: three bouncing dots in the chat while the ball thinks */
+  .think-bubble{
+    align-self:flex-start; background:#1e1e22; border:1px solid var(--line);
+    border-radius:16px 16px 16px 4px; padding:12px 14px; display:flex; gap:5px;
+    animation:bubblepop .3s ease both;
+  }
+  .think-bubble i{width:7px; height:7px; border-radius:50%; background:var(--faint); animation:thinkdot 1.2s ease-in-out infinite}
+  .think-bubble i:nth-child(2){animation-delay:.15s}
+  .think-bubble i:nth-child(3){animation-delay:.3s}
+  @keyframes thinkdot{0%,60%,100%{transform:translateY(0); opacity:.4} 30%{transform:translateY(-4px); opacity:1}}
   .ball.angry .ball-eyes{animation:none}
   .ball.angry .eye{animation:none}
   .ball.angry .eye:first-child{transform:rotate(20deg) scaleY(.45)}
@@ -645,6 +655,16 @@
       b.className = 'q-bubble'; b.textContent = q;
       chat.appendChild(b);
     }
+    let thinkEl = null;
+    function showThinking(){
+      thinkEl = document.createElement('div');
+      thinkEl.className = 'think-bubble';
+      thinkEl.innerHTML = '<i></i><i></i><i></i>';
+      chat.appendChild(thinkEl);
+    }
+    function hideThinking(){
+      if (thinkEl) { thinkEl.remove(); thinkEl = null; }
+    }
     function showAnswer(text, kind){
       const b = document.createElement('div');
       b.className = 'a-bubble'; b.textContent = trimAnswer(text);
@@ -710,6 +730,7 @@
         return;
       }
       showQuestion(q);
+      showThinking();
       const prompt = PERSONA + ' Вопрос: ' + q;
       // two retries with growing pauses: free-API blips must not pose as a tired ball
       let answer = null;
@@ -725,6 +746,7 @@
       }
       setTimeout(()=>{
         setMood(null);
+        hideThinking();
         if (!answer) {
           // honest failure: no fake prediction, no history entry
           showAnswer(TIRED[curLang] || TIRED.ru, 'tired');
@@ -737,8 +759,9 @@
     askBtn.addEventListener('click', ask);
     ball.addEventListener('click', ask);
     input.addEventListener('keydown', e=>{ if (e.key==='Enter') ask(); });
-    // the ball calms down as soon as a real question starts appearing
-    input.addEventListener('input', ()=>setMood(null));
+    // the ball calms down as soon as a real question starts appearing —
+    // but not while it is thinking (the dots already say it is busy)
+    input.addEventListener('input', ()=>{ if (busy && ball.classList.contains('thinking')) return; setMood(null); });
     if (soundBtn) {
       setSound(soundOn);
       soundBtn.addEventListener('click', ()=>{ ensureAudio(); setSound(!soundOn); });
