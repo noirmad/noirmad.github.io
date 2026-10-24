@@ -292,6 +292,21 @@
     transition:opacity .3s ease, transform .35s cubic-bezier(.22,.8,.3,1);
   }
   .ball-window.show{opacity:1; transform:translate(-50%,-50%) scale(1)}
+  /* idle eyes, Grok-bot style: the ball looks around the site, blinking now and then */
+  .ball-eyes{position:absolute; left:50%; top:18px; transform:translateX(-50%); display:flex; gap:20px; transition:opacity .3s ease}
+  .ball.answered .ball-eyes{opacity:0}
+  .eye{width:26px; height:26px; border-radius:50%; background:#f5f5f4; display:flex; align-items:center; justify-content:center; overflow:hidden; animation:eyeblink 7s infinite}
+  .pupil{width:12px; height:12px; border-radius:50%; background:#000; animation:eyelook 9s ease-in-out infinite}
+  @keyframes eyelook{
+    0%,100%{transform:translate(0,0)}
+    15%{transform:translate(-4px,1px)} 30%{transform:translate(4px,-1px)}
+    45%{transform:translate(3px,3px)} 60%{transform:translate(-3px,2px)}
+    75%{transform:translate(0,-3px)}
+  }
+  @keyframes eyeblink{
+    0%,92%,100%{transform:scaleY(1)}
+    94%,96%{transform:scaleY(.08)}
+  }
   .ball-ask{
     width:100%; padding:13px; border-radius:14px; border:0; cursor:pointer;
     background:var(--text); color:var(--bg); font:inherit; font-size:15px; font-weight:700;
@@ -309,6 +324,22 @@
   .streak-day.today{border-color:var(--faint)}
   /* a claimed today must read as claimed at a glance, not as merely outlined */
   .streak-day.done.today{background:var(--text); color:var(--bg); border-color:var(--text)}
+  /* ---------- prediction history ---------- */
+  .history{width:100%; border:1px solid var(--line); border-radius:16px; padding:14px 16px; display:flex; flex-direction:column; gap:12px}
+  .history-top{display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-weight:700; font-size:14px}
+  .history-acc{color:var(--muted); font-size:12.5px; font-weight:600; text-align:right}
+  .history-empty{color:var(--faint); font-size:13.5px; line-height:1.5; text-align:center}
+  .history-list{display:flex; flex-direction:column; gap:10px}
+  .hist-item{display:flex; gap:10px; justify-content:space-between; align-items:flex-start; padding-top:10px; border-top:1px solid var(--line)}
+  .hist-item:first-child{padding-top:0; border-top:0}
+  .hist-main{min-width:0}
+  .hist-q{font-size:14px; font-weight:600; overflow-wrap:break-word}
+  .hist-a{color:var(--muted); font-size:13.5px; margin-top:2px; overflow-wrap:break-word}
+  .hist-date{color:var(--faint); font-size:12px; margin-top:4px}
+  .hist-vote{display:flex; gap:6px; flex:none}
+  .hist-vote button{appearance:none; width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:transparent; color:var(--muted); font-size:14px; cursor:pointer; transition:all .2s ease}
+  .hist-vote button.picked-yes{background:var(--text); color:var(--bg); border-color:var(--text)}
+  .hist-vote button.picked-no{color:var(--text); border-color:var(--faint)}
   @media (prefers-reduced-motion:reduce){
     body,.reveal,.cover img.ph{animation:none; opacity:1; transform:none; filter:none}
   }
@@ -402,6 +433,10 @@
         <div class="ball" id="ball" role="button" tabindex="0" aria-label="Спросить шар">
           <div class="ball-face" id="ballFace"><span class="eight">8</span></div>
           <div class="ball-window" id="ballWindow"><span id="ballWindowText"></span></div>
+          <div class="ball-eyes" aria-hidden="true">
+            <span class="eye"><span class="pupil"></span></span>
+            <span class="eye"><span class="pupil"></span></span>
+          </div>
         </div>
         <button class="ball-ask" id="ballAsk" type="button" data-i18n="ball_ask">Спросить шар</button>
         <div class="streak" id="streakBox" hidden>
@@ -411,6 +446,14 @@
             <span class="swap" data-i18n="streak_days">дней подряд</span>
           </div>
           <div class="streak-week" id="streakWeek"></div>
+        </div>
+        <div class="history" id="historyBox">
+          <div class="history-top">
+            <span class="swap" data-i18n="ball_history">История предсказаний</span>
+            <span class="history-acc" id="historyAcc"></span>
+          </div>
+          <div class="history-empty swap" id="historyEmpty" data-i18n="ball_history_empty">Пока пусто — спроси шар о чём-нибудь.</div>
+          <div class="history-list" id="historyList"></div>
         </div>
       </div>
     </section>
@@ -456,7 +499,8 @@
       askhint:"Есть вопрос? Пиши его в комментарии к оплате — отвечу в разделе выше. Имя можно не указывать.",
       qa:"Вопросы и ответы", qaempty:"Здесь может быть ответ на твой вопрос…",
       ball:"Предсказательный шар", ball_ph:"Задай вопрос шару…", ball_ask:"Спросить шар",
-      mode_classic:"Классика", mode_streak:"Ударный режим", streak_days:"дней подряд" },
+      mode_classic:"Классика", mode_streak:"Ударный режим", streak_days:"дней подряд",
+      ball_history:"История предсказаний", ball_history_empty:"Пока пусто — спроси шар о чём-нибудь.", ball_noq:"Без вопроса" },
     en: { title:"Damir", play:"Listen to the track", ptype:"Personality type", portfolio:"Portfolio", live:"live",
       ordo_desc:"A duty-roster site for study groups.",
       ad:"Ad", ank_desc:"Earn money taking surveys", go:"Open", ank_sub:"Online surveys", ank_rate:"4.4",
@@ -465,7 +509,8 @@
       askhint:"Got a question? Drop it in the payment comment — I'll answer in the section above. No name needed.",
       qa:"Questions & answers", qaempty:"The answer to your question could be here…",
       ball:"Magic 8-ball", ball_ph:"Ask the ball a question…", ball_ask:"Ask the ball",
-      mode_classic:"Classic", mode_streak:"Streak mode", streak_days:"day streak" }
+      mode_classic:"Classic", mode_streak:"Streak mode", streak_days:"day streak",
+      ball_history:"Prediction history", ball_history_empty:"Nothing yet — ask the ball something.", ball_noq:"No question" }
   };
   let curLang = 'ru';
   // Анкетка card: dress it as the visitor's own store (App Store on iOS, Google Play on Android)
@@ -489,6 +534,7 @@
     document.querySelectorAll('[data-i18n]').forEach(el=>{ el.innerHTML = I18N[l][el.dataset.i18n]; });
     document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder = I18N[l][el.dataset.i18nPh]; });
     if (window.__renderStreak) window.__renderStreak();
+    if (window.__renderHistory) window.__renderHistory();
     document.getElementById('quoteImg').hidden = (l === 'en');
     document.getElementById('quoteEn').hidden = (l !== 'en');
     document.title = I18N[l].title;
@@ -556,19 +602,10 @@
     const ballWindow = $('ballWindow'), ballWindowText = $('ballWindowText');
     const streakBox = $('streakBox'), streakCount = $('streakCount'), streakWeek = $('streakWeek');
     if (!ball) return;
-    const FALLBACK_CLASSIC = [
-      'Скорее да.', 'Скорее нет.', 'Пока нет данных.', 'Возможно, но не факт.',
-      'Зависит от тебя.', 'Шансы примерно пополам.', 'Да, если сделаешь это сам.',
-      'Нет, не в этот раз.', 'Слишком рано судить.', 'Скорее всего, да.',
-      'Скорее всего, нет.', 'Не стоит на это рассчитывать.'
-    ];
-    const FALLBACK_BLUNT = [
-      'Нет.', 'Да. Точка.', 'Сам знаешь ответ.', 'Хватит спрашивать — делай.',
-      'Нет, и это окончательно.', 'Да, но не ной потом.', 'Забудь.', 'Ещё чего.',
-      'Да, если перестанешь сомневаться.', 'Нет. Следующий вопрос.'
-    ];
     const PERSONA_CLASSIC = 'Ты предсказательный шар. Отвечай только одной короткой фразой на русском, спокойным отстранённым тоном, реалистично и по делу, без мистики, метафор и поэзии, без объяснений.';
     const PERSONA_BLUNT = 'Ты магический предсказательный шар в ударном режиме. Отвечай только одной короткой фразой на русском, прямо и жёстко, без смягчений и без объяснений.';
+    // no canned answers anymore: a failed API call is honestly a tired ball, not a fake prediction
+    const TIRED = {ru:'Шар устал, зайдите позже.', en:'The ball is tired, come back later.'};
     let mode = 'classic';
     let busy = false;
     const KEY = 'damir-ball-streak';
@@ -597,6 +634,51 @@
       else { s.count = 1; }
       s.last = t; s.days[t] = true; saveStreak(s); renderStreak();
     }
+    // prediction history: only real API answers get recorded, with a true/false verdict
+    const HKEY = 'damir-ball-history';
+    function loadHistory(){ try { const h = JSON.parse(localStorage.getItem(HKEY)); return Array.isArray(h) ? h : []; } catch(e){ return []; } }
+    function saveHistory(h){ try { localStorage.setItem(HKEY, JSON.stringify(h.slice(0,30))); } catch(e){} }
+    function fmtDate(ts){
+      const d = new Date(ts);
+      return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+', '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+    }
+    function renderHistory(){
+      const h = loadHistory();
+      const list = $('historyList'), empty = $('historyEmpty'), acc = $('historyAcc');
+      if (!list) return;
+      const rated = h.filter(x=>x.v);
+      if (rated.length) {
+        const yes = rated.filter(x=>x.v==='yes').length;
+        const p = Math.round(yes/rated.length*100);
+        acc.textContent = curLang==='en' ? 'Accuracy: '+p+'% · rated '+rated.length : 'Точность: '+p+'% · оценено '+rated.length;
+      } else {
+        acc.textContent = curLang==='en' ? 'Rate predictions to see accuracy' : 'Оцени предсказания — и здесь появится точность';
+      }
+      empty.hidden = h.length>0;
+      list.innerHTML = '';
+      h.forEach((item, idx)=>{
+        const row = document.createElement('div'); row.className='hist-item';
+        const main = document.createElement('div'); main.className='hist-main';
+        const q = document.createElement('div'); q.className='hist-q';
+        q.textContent = item.q || (curLang==='en' ? 'No question' : 'Без вопроса');
+        const a = document.createElement('div'); a.className='hist-a'; a.textContent = item.a;
+        const d = document.createElement('div'); d.className='hist-date'; d.textContent = fmtDate(item.ts);
+        main.append(q,a,d);
+        const vote = document.createElement('div'); vote.className='hist-vote';
+        const by = document.createElement('button'); by.type='button'; by.textContent='✓';
+        by.setAttribute('aria-label', curLang==='en' ? 'Came true' : 'Сбылось');
+        const bn = document.createElement('button'); bn.type='button'; bn.textContent='✗';
+        bn.setAttribute('aria-label', curLang==='en' ? 'Did not come true' : 'Не сбылось');
+        if (item.v==='yes') by.classList.add('picked-yes');
+        if (item.v==='no') bn.classList.add('picked-no');
+        by.addEventListener('click', ()=>{ const hh=loadHistory(); if (hh[idx]) { hh[idx].v='yes'; saveHistory(hh); renderHistory(); } });
+        bn.addEventListener('click', ()=>{ const hh=loadHistory(); if (hh[idx]) { hh[idx].v='no'; saveHistory(hh); renderHistory(); } });
+        vote.append(by,bn);
+        row.append(main,vote);
+        list.appendChild(row);
+      });
+    }
+    window.__renderHistory = renderHistory;
     function showAnswer(text){
       if (text.length > 110) {
         const cut = text.slice(0, 110);
@@ -605,8 +687,9 @@
       ballWindowText.textContent = text;
       face.classList.add('hide');
       ballWindow.classList.add('show');
+      ball.classList.add('answered');
     }
-    function showEight(){ face.classList.remove('hide'); ballWindow.classList.remove('show'); }
+    function showEight(){ face.classList.remove('hide'); ballWindow.classList.remove('show'); ball.classList.remove('answered'); }
     async function ask(){
       if (busy) return; busy = true; askBtn.disabled = true;
       ball.classList.remove('shaking'); void ball.offsetWidth; ball.classList.add('shaking');
@@ -617,6 +700,7 @@
       const persona = askMode==='streak' ? PERSONA_BLUNT : PERSONA_CLASSIC;
       const prompt = persona + (q ? ' Вопрос: ' + q : ' Дай одно короткое предсказание.');
       // claim the day right away: the streak must visibly count the tap, not the late answer
+      const streakBefore = localStorage.getItem(KEY);
       if (askMode==='streak') markStreak();
       let answer = null;
       try {
@@ -624,13 +708,21 @@
         const res = await fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt), {signal: ctl.signal});
         clearTimeout(to);
         if (res.ok) { const t = (await res.text()).trim(); if (t) answer = t; }
-      } catch(e){ /* fall through to canned phrases */ }
+      } catch(e){ /* handled below as a tired ball */ }
       setTimeout(()=>{
         if (!answer) {
-          const pool = askMode==='streak' ? FALLBACK_BLUNT : FALLBACK_CLASSIC;
-          answer = pool[Math.floor(Math.random()*pool.length)];
+          // honest failure: no fake prediction, no history entry, and the streak day rolls back
+          if (askMode==='streak') {
+            if (streakBefore===null) localStorage.removeItem(KEY); else localStorage.setItem(KEY, streakBefore);
+            renderStreak();
+          }
+          showAnswer(TIRED[curLang] || TIRED.ru);
+        } else {
+          showAnswer(answer);
+          const hh = loadHistory();
+          hh.unshift({q:q, a:answer, ts:Date.now(), mode:askMode, v:null});
+          saveHistory(hh); renderHistory();
         }
-        showAnswer(answer);
         ball.classList.remove('shaking'); busy = false; askBtn.disabled = false;
       }, 900);
     }
@@ -648,6 +740,7 @@
     ball.addEventListener('click', ask);
     input.addEventListener('keydown', e=>{ if (e.key==='Enter') ask(); });
     renderStreak();
+    renderHistory();
   })();
 </script>
 </body>
