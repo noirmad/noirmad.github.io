@@ -255,8 +255,19 @@
   .ball-input:focus{border-color:var(--faint)}
   .ball-input::placeholder{color:var(--faint)}
   /* the ball itself is now the Grok-bot face: a plain white ball, two black oval eyes, nothing else */
+  .ball-zone{position:relative; width:110px; margin:16px auto 8px}
+  .ball-sound{
+    position:absolute; left:calc(100% + 14px); top:50%; transform:translateY(-50%);
+    width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:var(--card);
+    color:var(--faint); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .ball-sound svg{width:17px; height:17px}
+  .ball-sound .slash{display:none}
+  .ball-sound.muted{color:#5a5a5e}
+  .ball-sound.muted .waves{display:none}
+  .ball-sound.muted .slash{display:block}
   .ball{
-    width:110px; height:110px; border-radius:50%; margin:6px auto 0; cursor:pointer; position:relative;
+    width:110px; height:110px; border-radius:50%; margin:0; cursor:pointer; position:relative;
     background:radial-gradient(circle at 34% 30%, #ffffff 0%, #ececee 45%, #c9c9cd 100%);
     box-shadow:0 24px 60px rgba(0,0,0,.85), inset -10px -14px 30px rgba(0,0,0,.18);
     display:flex; align-items:center; justify-content:center; transition:transform .15s ease;
@@ -279,20 +290,26 @@
     background:radial-gradient(circle at 34% 30%, #ff9a9a 0%, #e5484d 48%, #8f1d22 100%);
     opacity:0; transition:opacity .4s ease; z-index:1}
   .ball.blush::after{opacity:1}
-  /* the answer pops out of the ball as its own dark window */
-  .ball-window{
-    position:absolute; left:50%; top:50%; width:182px; max-width:76vw; padding:14px 16px; z-index:2;
-    background:#0a0a0c; border:1px solid rgba(255,255,255,.28); border-radius:16px;
-    text-align:center; font-size:14px; line-height:1.45; font-weight:600; color:var(--text);
-    box-shadow:0 14px 40px rgba(0,0,0,.85);
-    opacity:0; pointer-events:none; transform:translate(-50%,-50%) scale(.6);
-    transition:opacity .3s ease, transform .35s cubic-bezier(.22,.8,.3,1);
+  /* the chat: current exchange only, no history — question right, the ball's Quote left */
+  .ball-chat{width:100%; display:flex; flex-direction:column; gap:10px}
+  .ball-chat:empty{display:none}
+  .q-bubble{
+    align-self:flex-end; max-width:82%; background:#1e1e22; border:1px solid var(--line);
+    border-radius:16px 16px 4px 16px; padding:10px 14px; font-size:14px; line-height:1.45; color:var(--text);
+    animation:bubblepop .4s cubic-bezier(.34,1.56,.64,1) both;
   }
-  .ball-window.show{opacity:1; transform:translate(-50%,-50%) scale(1)}
+  .a-bubble{
+    align-self:flex-start; position:relative; max-width:88%; background:#0a0a0c;
+    border:1px solid rgba(255,255,255,.28); border-radius:16px 16px 16px 4px;
+    padding:12px 16px 12px 34px; font-size:14px; line-height:1.45; font-weight:600; color:var(--text);
+    box-shadow:0 14px 40px rgba(0,0,0,.85);
+    animation:bubblepop .45s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .a-bubble::before{content:"\201C"; position:absolute; left:10px; top:4px; font-size:34px; line-height:1; color:#555}
+  @keyframes bubblepop{from{opacity:0; transform:translateY(10px) scale(.92)} to{opacity:1; transform:translateY(0) scale(1)}}
   /* the face: two black oval eyes that dart around as a pair and blink together */
   .ball-eyes{position:relative; z-index:2; display:flex; gap:18px; transition:opacity .3s ease; animation:eyedart 9s ease-in-out infinite}
-  .ball-eyes.hide{opacity:0}
-  .eye{width:14px; height:38px; border-radius:50%; background:#000; animation:eyeblink 5s infinite}
+  .eye{width:14px; height:38px; border-radius:50%; background:#000; animation:eyeblink 5s infinite; transition:transform .3s ease}
   @keyframes eyedart{
     0%,100%{transform:translate(0,0)}
     12%{transform:translate(-8px,2px)} 25%{transform:translate(6px,-2px)}
@@ -303,6 +320,16 @@
     0%,90%,100%{transform:scaleY(1)}
     92%,94%{transform:scaleY(.08)}
   }
+  /* moods: thinking is eyes only (no shake); anger is shake + blush + narrowed tilted eyes */
+  .ball.thinking .ball-eyes{animation:eyethink 2.2s ease-in-out infinite}
+  @keyframes eyethink{
+    0%,100%{transform:translate(0,-4px)}
+    25%{transform:translate(-7px,-5px)} 50%{transform:translate(7px,-4px)} 75%{transform:translate(0,-6px)}
+  }
+  .ball.angry .ball-eyes{animation:none}
+  .ball.angry .eye{animation:none}
+  .ball.angry .eye:first-child{transform:rotate(20deg) scaleY(.45)}
+  .ball.angry .eye:last-child{transform:rotate(-20deg) scaleY(.45)}
   .ball-ask{
     width:100%; padding:13px; border-radius:14px; border:0; cursor:pointer;
     background:var(--text); color:var(--bg); font:inherit; font-size:15px; font-weight:700;
@@ -395,15 +422,20 @@
     <section class="reveal d7">
       <div class="slabel swap" data-i18n="ball">Разумный шарик</div>
       <div class="ball-row">
-        <input class="ball-input" id="ballQ" type="text" maxlength="200" placeholder="Задай вопрос шару…" data-i18n-ph="ball_ph" autocomplete="off">
-        <div class="ball" id="ball" role="button" tabindex="0" aria-label="Спросить шар">
-          <div class="ball-eyes" id="ballEyes" aria-hidden="true">
-            <span class="eye"></span>
-            <span class="eye"></span>
+        <input class="ball-input" id="ballQ" type="text" maxlength="200" placeholder="Задай вопрос шарику…" data-i18n-ph="ball_ph" autocomplete="off">
+        <div class="ball-zone">
+          <div class="ball" id="ball" role="button" tabindex="0" aria-label="Спросить шарик">
+            <div class="ball-eyes" id="ballEyes" aria-hidden="true">
+              <span class="eye"></span>
+              <span class="eye"></span>
+            </div>
           </div>
-          <div class="ball-window" id="ballWindow"><span id="ballWindowText"></span></div>
+          <button class="ball-sound" id="ballSound" type="button" aria-label="Звук шарика">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4z" fill="currentColor" stroke="none"/><path class="waves" d="M15 9a4.5 4.5 0 010 6M18 6.5a8.5 8.5 0 010 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line class="slash" x1="15" y1="9" x2="21" y2="15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line class="slash" x1="21" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </button>
         </div>
-        <button class="ball-ask" id="ballAsk" type="button" data-i18n="ball_ask">Спросить шар</button>
+        <div class="ball-chat" id="ballChat"></div>
+        <button class="ball-ask" id="ballAsk" type="button" data-i18n="ball_ask">Спросить шарик</button>
       </div>
     </section>
 
@@ -447,7 +479,7 @@
       socials:"Соцсети", ask:"Анонимный вопрос", askfrom:"50 ₽",
       askhint:"Есть вопрос? Пиши его в комментарии к оплате — отвечу в разделе выше. Имя можно не указывать.",
       qa:"Вопросы и ответы", qaempty:"Здесь может быть ответ на твой вопрос…",
-      ball:"Разумный шарик", ball_ph:"Задай вопрос шару…", ball_ask:"Спросить шар" },
+      ball:"Разумный шарик", ball_ph:"Задай вопрос шарику…", ball_ask:"Спросить шарик" },
     en: { title:"Damir", play:"Listen to the track", ptype:"Personality type", portfolio:"Portfolio", live:"live",
       ordo_desc:"A duty-roster site for study groups.",
       ad:"Ad", ank_desc:"Earn money taking surveys", go:"Open", ank_sub:"Online surveys", ank_rate:"4.4",
@@ -538,65 +570,127 @@
     audio.addEventListener('ended', ()=>{ btn.classList.remove('playing'); btn.classList.remove('loading'); });
     audio.addEventListener('error', ()=>btn.classList.remove('loading'));
   })();
-  // magic 8-ball: free keyless API (Pollinations), one tone, no modes, no streak
+  // smart ball: free keyless API (Pollinations), one tone, no modes, no streak, no history
   (function(){
     const $ = id => document.getElementById(id);
-    const ball = $('ball'), eyes = $('ballEyes'), askBtn = $('ballAsk'), input = $('ballQ');
-    const ballWindow = $('ballWindow'), ballWindowText = $('ballWindowText');
+    const ball = $('ball'), askBtn = $('ballAsk'), input = $('ballQ'), chat = $('ballChat'), soundBtn = $('ballSound');
     if (!ball) return;
-    const PERSONA = 'Ты предсказательный шар. Отвечай только одной короткой фразой на русском, спокойным отстранённым тоном, реалистично и по делу, без мистики, метафор и поэзии, без объяснений.';
+    const PERSONA = 'Ты — разумный шарик. Отвечай только одной короткой фразой на русском, спокойным отстранённым тоном, реалистично и по делу, без мистики, метафор и поэзии, без объяснений. Никогда не называй себя ассистентом, компьютером или ИИ. Не извиняйся: если не отвечаешь, скажи коротко «Не отвечу».';
     // no canned answers: a failed API call is honestly a tired ball, not a fake prediction
-    const TIRED = {ru:'Шар устал, зайдите позже.', en:'The ball is tired, come back later.'};
+    const TIRED = {ru:'Шарик устал, зайдите позже.', en:'The ball is tired, come back later.'};
     const REFUSAL = {ru:'Сначала задай вопрос — на пустоту не отвечаю.', en:'Ask a question first — I don’t answer emptiness.'};
     let busy = false;
-    function showAnswer(text){
+    // cartoon gibberish: tiny WebAudio blips, no files, only on tap-driven speech
+    let audioCtx = null;
+    let soundOn = true;
+    try { soundOn = localStorage.getItem('ballSound') !== '0'; } catch(e){}
+    function ensureAudio(){
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+      } catch(e){}
+    }
+    function setSound(on){
+      soundOn = on;
+      try { localStorage.setItem('ballSound', on ? '1' : '0'); } catch(e){}
+      if (soundBtn) soundBtn.classList.toggle('muted', !on);
+    }
+    function tone(freq, start, dur, type){
+      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.type = type; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.09, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(start); osc.stop(start + dur + 0.05);
+    }
+    function speak(kind){
+      if (!soundOn) return;
+      try {
+        ensureAudio();
+        const now = audioCtx.currentTime;
+        if (kind === 'angry') {
+          tone(200, now, 0.14, 'square'); tone(150, now + 0.16, 0.18, 'square');
+        } else {
+          const base = 520 + Math.random() * 120;
+          tone(base, now, 0.08, 'sine'); tone(base * 1.25, now + 0.1, 0.08, 'sine'); tone(base * 1.5, now + 0.2, 0.1, 'sine');
+        }
+      } catch(e){ /* sound is garnish, never breaks answers */ }
+    }
+    function trimAnswer(text){
       if (text.length > 110) {
         const cut = text.slice(0, 110);
         text = cut.slice(0, cut.lastIndexOf(' ')) + '…';
       }
-      ballWindowText.textContent = text;
-      eyes.classList.add('hide');
-      ballWindow.classList.add('show');
+      return text;
     }
-    function showEight(){ eyes.classList.remove('hide'); ballWindow.classList.remove('show'); ball.classList.remove('blush'); }
+    function showQuestion(q){
+      const b = document.createElement('div');
+      b.className = 'q-bubble'; b.textContent = q;
+      chat.appendChild(b);
+    }
+    function showAnswer(text, kind){
+      const b = document.createElement('div');
+      b.className = 'a-bubble'; b.textContent = trimAnswer(text);
+      chat.appendChild(b);
+      speak(kind);
+    }
+    function setMood(mood){
+      ball.classList.remove('thinking', 'angry', 'blush', 'shaking');
+      if (mood) ball.classList.add(mood);
+    }
     async function ask(){
       if (busy) return; busy = true; askBtn.disabled = true;
-      ball.classList.remove('shaking'); void ball.offsetWidth; ball.classList.add('shaking');
-      showEight();
+      ensureAudio(); // the tap gesture unlocks sound for the later answer blips
+      setMood('thinking'); // thinking is eyes only — shaking means anger now, nothing else
       const q = input.value.trim();
+      input.value = '';
+      chat.innerHTML = '';
       if (!q) {
-        // alive refusal: the ball blushes, shakes, and answers through the quote window
-        ball.classList.add('blush');
-        setTimeout(()=>{ showAnswer(REFUSAL[curLang] || REFUSAL.ru); ball.classList.remove('shaking'); busy = false; askBtn.disabled = false; }, 900);
+        // angry refusal: shake + blush + narrowed tilted eyes, no API call
+        setMood('angry');
+        void ball.offsetWidth; ball.classList.add('shaking');
+        setTimeout(()=>{
+          ball.classList.remove('shaking'); // breathing resumes; anger + blush stay until next input
+          showAnswer(REFUSAL[curLang] || REFUSAL.ru, 'angry');
+          busy = false; askBtn.disabled = false;
+        }, 900);
         return;
       }
+      showQuestion(q);
       const prompt = PERSONA + ' Вопрос: ' + q;
-      // one retry: a single network blip must not pose as a tired ball
+      // two retries with growing pauses: free-API blips must not pose as a tired ball
       let answer = null;
-      for (let attempt = 0; attempt < 2 && !answer; attempt++) {
-        if (attempt > 0) await new Promise(r=>setTimeout(r, 1200));
+      const waits = [0, 1200, 3000];
+      for (let attempt = 0; attempt < 3 && !answer; attempt++) {
+        if (waits[attempt]) await new Promise(r=>setTimeout(r, waits[attempt]));
         try {
           const ctl = new AbortController(), to = setTimeout(()=>ctl.abort(), 15000);
           const res = await fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt), {signal: ctl.signal});
           clearTimeout(to);
           if (res.ok) { const t = (await res.text()).trim(); if (t) answer = t; }
-        } catch(e){ /* retry once, then tired */ }
+        } catch(e){ /* retry, then tired */ }
       }
       setTimeout(()=>{
+        setMood(null);
         if (!answer) {
           // honest failure: no fake prediction, no history entry
-          showAnswer(TIRED[curLang] || TIRED.ru);
+          showAnswer(TIRED[curLang] || TIRED.ru, 'tired');
         } else {
-          showAnswer(answer);
+          showAnswer(answer, 'answer');
         }
-        ball.classList.remove('shaking'); busy = false; askBtn.disabled = false;
+        busy = false; askBtn.disabled = false;
       }, 900);
     }
     askBtn.addEventListener('click', ask);
     ball.addEventListener('click', ask);
     input.addEventListener('keydown', e=>{ if (e.key==='Enter') ask(); });
     // the ball calms down as soon as a real question starts appearing
-    input.addEventListener('input', ()=>ball.classList.remove('blush'));
+    input.addEventListener('input', ()=>setMood(null));
+    if (soundBtn) {
+      setSound(soundOn);
+      soundBtn.addEventListener('click', ()=>{ ensureAudio(); setSound(!soundOn); });
+    }
   })();
 </script>
 </body>
