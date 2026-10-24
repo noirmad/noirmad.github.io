@@ -608,6 +608,8 @@
     const CREATOR = {ru:'Меня сделал Дамир.', en:'Damir made me.'};
     // no canned answers: a failed API call is honestly a tired ball, not a fake prediction
     const TIRED = {ru:'Шарик устал, зайдите позже.', en:'The ball is tired, come back later.'};
+    // 429 means the free API's per-IP limit, not a broken ball: say so, and suggest waiting it out
+    const OVERHEATED = {ru:'Шарик перегрет — подожди минутку и спроси снова.', en:'The ball is overheated — wait a minute and ask again.'};
     const REFUSAL = {ru:'Сначала задай вопрос — на пустоту не отвечаю.', en:'Ask a question first — I don’t answer emptiness.'};
     let busy = false;
     // cartoon gibberish: tiny WebAudio blips, no files, only on tap-driven speech
@@ -752,14 +754,15 @@
       showThinking();
       const prompt = PERSONA + ' Вопрос: ' + q;
       // two retries with growing pauses: free-API blips must not pose as a tired ball
-      let answer = null;
+      let answer = null, lastStatus = 0;
       const waits = [0, 1200, 3000];
       for (let attempt = 0; attempt < 3 && !answer; attempt++) {
         if (waits[attempt]) await new Promise(r=>setTimeout(r, waits[attempt]));
         try {
-          const ctl = new AbortController(), to = setTimeout(()=>ctl.abort(), 15000);
+          const ctl = new AbortController(), to = setTimeout(()=>ctl.abort(), 20000);
           const res = await fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt), {signal: ctl.signal});
           clearTimeout(to);
+          lastStatus = res.status;
           if (res.ok) { const t = (await res.text()).trim(); if (t) answer = t; }
         } catch(e){ /* retry, then tired */ }
       }
@@ -767,8 +770,10 @@
         setMood(null);
         hideThinking();
         if (!answer) {
-          // honest failure: no fake prediction, no history entry
-          showAnswer(TIRED[curLang] || TIRED.ru, 'tired');
+          // honest failure: no fake prediction, no history entry —
+          // and the question goes back into the field, so retry is one tap, not retyping
+          input.value = q;
+          showAnswer(lastStatus === 429 ? (OVERHEATED[curLang] || OVERHEATED.ru) : (TIRED[curLang] || TIRED.ru), 'tired');
         } else {
           showAnswer(answer, 'answer');
         }
