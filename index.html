@@ -419,7 +419,6 @@
     <section class="reveal d7">
       <div class="slabel swap" data-i18n="ball">Лэй</div>
       <div class="ball-row">
-        <input class="ball-input" id="ballQ" type="text" maxlength="200" placeholder="Задай вопрос Лэю…" data-i18n-ph="ball_ph" autocomplete="off">
         <div class="ball-zone">
           <div class="ball" id="ball" role="button" tabindex="0" aria-label="Спросить Лэя">
             <div class="ball-eyes" id="ballEyes" aria-hidden="true">
@@ -433,6 +432,7 @@
           </button>
         </div>
         <div class="ball-chat" id="ballChat"></div>
+        <input class="ball-input" id="ballQ" type="text" maxlength="200" placeholder="Задай вопрос Лэю…" data-i18n-ph="ball_ph" autocomplete="off">
         <button class="ball-ask" id="ballAsk" type="button" data-i18n="ball_ask">Спросить Лэя</button>
       </div>
     </section>
@@ -586,7 +586,7 @@
     const $ = id => document.getElementById(id);
     const ball = $('ball'), askBtn = $('ballAsk'), input = $('ballQ'), chat = $('ballChat'), soundBtn = $('ballSound');
     if (!ball) return;
-    const PERSONA = 'Ты — Лэй, разумный шарик. Отвечай только одной короткой фразой на русском, спокойным отстранённым тоном, реалистично и по делу, без мистики, метафор и поэзии, без объяснений. Никогда не называй себя ассистентом, компьютером или ИИ. Не извиняйся: если не отвечаешь, скажи коротко «Не отвечу». Твой создатель — Дамир. Ты — Лэй, а не человек, ассистент или ИИ.';
+    const PERSONA = 'Ты — Лэй, милый глазастый шарик. Отвечай на русском, коротко или средне: от одной фразы до пары коротких предложений, не длиннее. Не растекайся, без воды и длинных объяснений. Отвечай определённо и конкретно: займи сторону, скажи да или нет, выбери вариант. Никогда не уклоняйся в «не знаю», «возможно» или «не могу сказать» — даже на странный вопрос дай уверенный ответ, пусть и с юмором. Говори живо и тепло, с лёгкой дерзостью и сухим юмором, как прямой человек, которому интересно. Без мистики, метафор и поэзии, без извинений. Никогда не называй себя ассистентом, компьютером или ИИ. «Не отвечу» — только если вопрос оскорбительный или бессмысленный. Твой создатель — Дамир. Ты — Лэй, а не человек, ассистент или ИИ.';
     // identity questions never reach the API: the free model leaks its own maker there,
     // so the ball answers its fixed character facts locally, like the empty-question refusal
     const IDENTITY = {ru:'Я — Лэй.', en:'I’m Lay.'};
@@ -669,8 +669,8 @@
       } catch(e){ /* sound is garnish, never breaks answers */ }
     }
     function trimAnswer(text){
-      if (text.length > 110) {
-        const cut = text.slice(0, 110);
+      if (text.length > 240) {
+        const cut = text.slice(0, 240);
         text = cut.slice(0, cut.lastIndexOf(' ')) + '…';
       }
       return text;
