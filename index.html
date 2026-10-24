@@ -290,7 +290,7 @@
     background:radial-gradient(circle at 34% 30%, #ff9a9a 0%, #e5484d 48%, #8f1d22 100%);
     opacity:0; transition:opacity .4s ease; z-index:1}
   .ball.blush::after{opacity:1}
-  /* the chat: current exchange only, no history — question right, the ball's Quote left */
+  /* the chat: full history, kept on the visitor's device — question right, the ball's Quote left */
   .ball-chat{width:100%; display:flex; flex-direction:column; gap:10px; max-height:320px; overflow-y:auto; padding-right:10px}
   .ball-chat.fade-top{ -webkit-mask-image:linear-gradient(to bottom, rgba(0,0,0,0), #000 32px); mask-image:linear-gradient(to bottom, rgba(0,0,0,0), #000 32px)}
   .ball-chat.fade-bottom{ -webkit-mask-image:linear-gradient(to top, rgba(0,0,0,0), #000 32px); mask-image:linear-gradient(to top, rgba(0,0,0,0), #000 32px)}
@@ -586,7 +586,7 @@
     audio.addEventListener('ended', ()=>{ btn.classList.remove('playing'); btn.classList.remove('loading'); });
     audio.addEventListener('error', ()=>btn.classList.remove('loading'));
   })();
-  // smart ball: free keyless API (Pollinations), one tone, no modes, no streak, no history
+  // smart ball: free keyless API (Pollinations), one tone, no modes, no streak; chat history persists on-device
   (function(){
     const $ = id => document.getElementById(id);
     const ball = $('ball'), askBtn = $('ballAsk'), input = $('ballQ'), chat = $('ballChat'), soundBtn = $('ballSound');
@@ -679,6 +679,7 @@
       b.className = 'q-bubble'; b.textContent = q;
       chat.appendChild(b);
       scrollChat();
+      saveChat();
     }
     function scrollChat(){ chat.scrollTop = chat.scrollHeight; updateChatFade(); }
     function updateChatFade(){
@@ -697,11 +698,33 @@
     function hideThinking(){
       if (thinkEl) { thinkEl.remove(); thinkEl = null; }
     }
+    // chat history persists on the visitor's device: the exchange list lives
+    // in localStorage (same pattern as ballLastApi/ballSound) and is restored
+    // on load, so a reload or a later visit keeps the conversation
+    const CHAT_KEY = 'ballChat', CHAT_KEEP = 50;
+    function saveChat(){
+      if (thinkEl) return; // never persist the transient thinking dots
+      try {
+        while (chat.children.length > CHAT_KEEP) chat.removeChild(chat.firstChild);
+        localStorage.setItem(CHAT_KEY, chat.innerHTML);
+      } catch(e){}
+    }
+    function restoreChat(){
+      try {
+        const saved = localStorage.getItem(CHAT_KEY);
+        if (!saved) return;
+        chat.innerHTML = saved;
+        // restored bubbles appear at rest, without replaying the pop animation
+        Array.from(chat.children).forEach(el => { el.style.animation = 'none'; });
+        scrollChat();
+      } catch(e){}
+    }
     function showAnswer(text, kind){
       const b = document.createElement('div');
       b.className = 'a-bubble'; b.textContent = text;
       chat.appendChild(b);
       scrollChat();
+      saveChat();
       speak(kind);
     }
     function setMood(mood){
@@ -782,6 +805,7 @@
         else startCooldown(35);
       }, 900);
     }
+    restoreChat();
     askBtn.addEventListener('click', ask);
     ball.addEventListener('click', ask);
     input.addEventListener('keydown', e=>{ if (e.key==='Enter') ask(); });
