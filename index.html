@@ -612,6 +612,27 @@
     const OVERHEATED = {ru:'Шарик перегрет — подожди минутку и спроси снова.', en:'The ball is overheated — wait a minute and ask again.'};
     const REFUSAL = {ru:'Сначала задай вопрос — на пустоту не отвечаю.', en:'Ask a question first — I don’t answer emptiness.'};
     let busy = false;
+    // overheating cooldown: after a 429 the button shows a live 60s countdown
+    // and stays disabled until it ends — the wait is advice with force, not decoration
+    let coolTimer = null;
+    function fmtCool(s){ return Math.floor(s/60) + ':' + String(s%60).padStart(2, '0'); }
+    function startCooldown(seconds){
+      if (coolTimer) clearInterval(coolTimer);
+      let left = seconds;
+      const tick = ()=>{
+        if (left <= 0) {
+          clearInterval(coolTimer); coolTimer = null;
+          askBtn.textContent = I18N[curLang].ball_ask;
+          askBtn.disabled = false;
+          return;
+        }
+        askBtn.textContent = (curLang === 'en' ? 'Ask in ' : 'Спросить через ') + fmtCool(left);
+        left--;
+      };
+      askBtn.disabled = true;
+      tick();
+      coolTimer = setInterval(tick, 1000);
+    }
     // cartoon gibberish: tiny WebAudio blips, no files, only on tap-driven speech
     let audioCtx = null;
     let soundOn = true;
@@ -718,7 +739,7 @@
       armIdle();
     }
     async function ask(){
-      if (busy) return; busy = true; askBtn.disabled = true;
+      if (busy || coolTimer) return; busy = true; askBtn.disabled = true;
       ensureAudio(); // the tap gesture unlocks sound for the later answer blips
       setMood('thinking'); // thinking is eyes only — shaking means anger now, nothing else
       const q = input.value.trim();
@@ -778,6 +799,8 @@
           showAnswer(answer, 'answer');
         }
         busy = false; askBtn.disabled = false;
+        // a 429 restarts the visible wait: one minute on the button, then it frees itself
+        if (!answer && lastStatus === 429) startCooldown(60);
       }, 900);
     }
     askBtn.addEventListener('click', ask);
