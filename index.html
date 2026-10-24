@@ -612,6 +612,19 @@
     const OVERHEATED = {ru:'Шарик перегрет — подожди минутку и спроси снова.', en:'The ball is overheated — wait a minute and ask again.'};
     const REFUSAL = {ru:'Сначала задай вопрос — на пустоту не отвечаю.', en:'Ask a question first — I don’t answer emptiness.'};
     let busy = false;
+    // the limiter: the anonymous API allows ~1 reply per 30s, so the ball itself
+    // never sends faster — a 35s gap (limit + margin) after every API call, shared
+    // across tabs of one browser via localStorage, so two tabs cannot double the rate
+    const API_GAP_MS = 35000, GAP_KEY = 'ballLastApi';
+    let lastApiMem = 0;
+    function readLastApi(){
+      try { return +(localStorage.getItem(GAP_KEY) || 0) || lastApiMem; }
+      catch(e){ return lastApiMem; }
+    }
+    function writeLastApi(){
+      lastApiMem = Date.now();
+      try { localStorage.setItem(GAP_KEY, String(lastApiMem)); } catch(e){}
+    }
     // overheating cooldown: after a 429 the button shows a live 60s countdown
     // and stays disabled until it ends — the wait is advice with force, not decoration
     let coolTimer = null;
@@ -756,13 +769,13 @@
         }, 900);
         return;
       }
-      showQuestion(q);
       // identity check first: creator / who-are-you questions get a fixed local answer
       const norm = q.toLowerCase().replace(/ё/g, 'е');
       let local = null;
       if (/твой создатель|твой автор|кто тебя (создал|сделал)|кто создал тебя|кто сделал тебя|who (made|created) you|your creator/.test(norm)) local = CREATOR;
       else if (/^(кто ты|ты кто)/.test(norm) || /^что ты( такое)?\??$/.test(norm) || /^who are you/.test(norm)) local = IDENTITY;
       if (local) {
+        showQuestion(q);
         showThinking();
         setTimeout(()=>{
           setMood(null);
@@ -772,21 +785,29 @@
         }, 600);
         return;
       }
+      // the limiter: an API-bound question inside the gap does not go out at all —
+      // the question stays in the field and the button counts down the remainder
+      const last = readLastApi();
+      if (last && Date.now() - last < API_GAP_MS) {
+        busy = false; setMood(null);
+        input.value = q;
+        startCooldown(Math.ceil((API_GAP_MS - (Date.now() - last)) / 1000));
+        return;
+      }
+      showQuestion(q);
       showThinking();
       const prompt = PERSONA + ' Вопрос: ' + q;
-      // two retries with growing pauses: free-API blips must not pose as a tired ball
+      // a single attempt, deliberately: rapid retries inside the limit window
+      // cause the very 429s the limiter exists to prevent
+      writeLastApi();
       let answer = null, lastStatus = 0;
-      const waits = [0, 1200, 3000];
-      for (let attempt = 0; attempt < 3 && !answer; attempt++) {
-        if (waits[attempt]) await new Promise(r=>setTimeout(r, waits[attempt]));
-        try {
-          const ctl = new AbortController(), to = setTimeout(()=>ctl.abort(), 20000);
-          const res = await fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt), {signal: ctl.signal});
-          clearTimeout(to);
-          lastStatus = res.status;
-          if (res.ok) { const t = (await res.text()).trim(); if (t) answer = t; }
-        } catch(e){ /* retry, then tired */ }
-      }
+      try {
+        const ctl = new AbortController(), to = setTimeout(()=>ctl.abort(), 20000);
+        const res = await fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt), {signal: ctl.signal});
+        clearTimeout(to);
+        lastStatus = res.status;
+        if (res.ok) { const t = (await res.text()).trim(); if (t) answer = t; }
+      } catch(e){ /* single attempt: failure is tired, not a retry spiral */ }
       setTimeout(()=>{
         setMood(null);
         hideThinking();
@@ -799,8 +820,10 @@
           showAnswer(answer, 'answer');
         }
         busy = false; askBtn.disabled = false;
-        // a 429 restarts the visible wait: one minute on the button, then it frees itself
+        // every API call buys a gap: 35s normally, 60s if the limit still hit us
+        // (shared-IP traffic from strangers is the only 429 source left)
         if (!answer && lastStatus === 429) startCooldown(60);
+        else startCooldown(35);
       }, 900);
     }
     askBtn.addEventListener('click', ask);
