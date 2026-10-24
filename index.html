@@ -308,7 +308,7 @@
   .a-bubble::before{content:"\201C"; position:absolute; left:10px; top:4px; font-size:34px; line-height:1; color:#555}
   @keyframes bubblepop{from{opacity:0; transform:translateY(10px) scale(.92)} to{opacity:1; transform:translateY(0) scale(1)}}
   /* the face: two black oval eyes that dart around as a pair and blink together */
-  .ball-eyes{position:relative; z-index:2; display:flex; gap:18px; transition:opacity .3s ease; animation:eyedart 9s ease-in-out infinite}
+  .ball-eyes{position:relative; top:0; z-index:2; display:flex; gap:18px; transition:opacity .3s ease, top .3s ease; animation:eyedart 9s ease-in-out infinite}
   .eye{width:14px; height:38px; border-radius:50%; background:#000; animation:eyeblink 5s infinite; transition:transform .3s ease}
   @keyframes eyedart{
     0%,100%{transform:translate(0,0)}
@@ -348,8 +348,12 @@
     transition:opacity .35s ease, transform .35s cubic-bezier(.34,1.56,.64,1);
   }
   .ball.pointing .ball-pointer{opacity:1; transform:rotate(38deg) scale(1)}
-  .ball.pointing .ball-eyes{animation:none}
-  .ball.pointing .eye{animation:none; transform:translateY(4px)}
+  /* no animation:none here: removing the eye animations and restarting them
+     leaves compositor ghost frames (thin squashed-eye dashes) stuck on iOS Safari.
+     Pausing keeps the animations attached, so resuming restarts nothing;
+     the downward look comes from top (relative offset), which composes with
+     the paused dart instead of fighting it. Blinking keeps going — it never stops. */
+  .ball.pointing .ball-eyes{animation-play-state:paused; top:4px}
   .ball.nodding{animation:ballnod 1.1s ease 3}
   @keyframes ballnod{
     0%,100%{transform:translateY(0)}
@@ -721,6 +725,8 @@
     function cancelGag(){
       ball.classList.remove('pointing', 'nodding');
       if (gagEndTimer) { clearTimeout(gagEndTimer); gagEndTimer = null; }
+      // insurance against stuck compositor frames: force a fresh layout pass
+      void ball.offsetWidth;
     }
     function runGag(){
       if (gagDone || busy) return;
