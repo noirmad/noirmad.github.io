@@ -278,11 +278,20 @@
   .ball-face{
     width:98px; height:98px; border-radius:50%; background:#f5f5f4; color:#000;
     display:flex; align-items:center; justify-content:center; text-align:center; padding:10px;
-    transition:background .3s ease;
+    transition:opacity .3s ease;
   }
   .ball-face .eight{font-size:44px; font-weight:800}
-  .ball-face.ans{background:#0a0a0c; color:var(--text); border:1px solid rgba(255,255,255,.22)}
-  .ball-face .anstext{font-size:13.5px; line-height:1.35; font-weight:600}
+  .ball-face.hide{opacity:0}
+  /* the answer pops out of the ball as its own window, instead of squeezing into the 8-circle */
+  .ball-window{
+    position:absolute; left:50%; top:50%; width:182px; max-width:76vw; padding:14px 16px;
+    background:#0a0a0c; border:1px solid rgba(255,255,255,.28); border-radius:16px;
+    text-align:center; font-size:14px; line-height:1.45; font-weight:600; color:var(--text);
+    box-shadow:0 14px 40px rgba(0,0,0,.85);
+    opacity:0; pointer-events:none; transform:translate(-50%,-50%) scale(.6);
+    transition:opacity .3s ease, transform .35s cubic-bezier(.22,.8,.3,1);
+  }
+  .ball-window.show{opacity:1; transform:translate(-50%,-50%) scale(1)}
   .ball-ask{
     width:100%; padding:13px; border-radius:14px; border:0; cursor:pointer;
     background:var(--text); color:var(--bg); font:inherit; font-size:15px; font-weight:700;
@@ -290,7 +299,6 @@
   }
   .ball-ask:active{transform:scale(.99)}
   .ball-ask:disabled{opacity:.5}
-  .ball-note{color:var(--faint); font-size:12.5px; text-align:center; line-height:1.5}
   .streak{width:100%; border:1px solid var(--line); border-radius:16px; padding:14px 16px; display:flex; flex-direction:column; gap:10px}
   .streak-top{display:flex; align-items:center; gap:10px; font-weight:700}
   .streak-flame{width:22px; height:22px; color:var(--text); flex:none}
@@ -299,6 +307,8 @@
   .streak-day{flex:1; text-align:center; font-size:12px; color:var(--faint); padding:7px 0; border:1px solid var(--line); border-radius:10px}
   .streak-day.done{color:var(--text); border-color:rgba(255,255,255,.35); background:rgba(255,255,255,.05)}
   .streak-day.today{border-color:var(--faint)}
+  /* a claimed today must read as claimed at a glance, not as merely outlined */
+  .streak-day.done.today{background:var(--text); color:var(--bg); border-color:var(--text)}
   @media (prefers-reduced-motion:reduce){
     body,.reveal,.cover img.ph{animation:none; opacity:1; transform:none; filter:none}
   }
@@ -391,6 +401,7 @@
         </div>
         <div class="ball" id="ball" role="button" tabindex="0" aria-label="Спросить шар">
           <div class="ball-face" id="ballFace"><span class="eight">8</span></div>
+          <div class="ball-window" id="ballWindow"><span id="ballWindowText"></span></div>
         </div>
         <button class="ball-ask" id="ballAsk" type="button" data-i18n="ball_ask">Спросить шар</button>
         <div class="streak" id="streakBox" hidden>
@@ -401,7 +412,6 @@
           </div>
           <div class="streak-week" id="streakWeek"></div>
         </div>
-        <p class="ball-note swap" data-i18n="ball_note">Вопросы уходят во внешний бесплатный API. Если он недоступен — шар отвечает заготовленными фразами.</p>
       </div>
     </section>
 
@@ -446,8 +456,7 @@
       askhint:"Есть вопрос? Пиши его в комментарии к оплате — отвечу в разделе выше. Имя можно не указывать.",
       qa:"Вопросы и ответы", qaempty:"Здесь может быть ответ на твой вопрос…",
       ball:"Предсказательный шар", ball_ph:"Задай вопрос шару…", ball_ask:"Спросить шар",
-      mode_classic:"Классика", mode_streak:"Ударный режим", streak_days:"дней подряд",
-      ball_note:"Вопросы уходят во внешний бесплатный API. Если он недоступен — шар отвечает заготовленными фразами." },
+      mode_classic:"Классика", mode_streak:"Ударный режим", streak_days:"дней подряд" },
     en: { title:"Damir", play:"Listen to the track", ptype:"Personality type", portfolio:"Portfolio", live:"live",
       ordo_desc:"A duty-roster site for study groups.",
       ad:"Ad", ank_desc:"Earn money taking surveys", go:"Open", ank_sub:"Online surveys", ank_rate:"4.4",
@@ -456,8 +465,7 @@
       askhint:"Got a question? Drop it in the payment comment — I'll answer in the section above. No name needed.",
       qa:"Questions & answers", qaempty:"The answer to your question could be here…",
       ball:"Magic 8-ball", ball_ph:"Ask the ball a question…", ball_ask:"Ask the ball",
-      mode_classic:"Classic", mode_streak:"Streak mode", streak_days:"day streak",
-      ball_note:"Questions go to an external free API. If it's down, the ball answers with canned phrases." }
+      mode_classic:"Classic", mode_streak:"Streak mode", streak_days:"day streak" }
   };
   let curLang = 'ru';
   // Анкетка card: dress it as the visitor's own store (App Store on iOS, Google Play on Android)
@@ -545,20 +553,21 @@
   (function(){
     const $ = id => document.getElementById(id);
     const ball = $('ball'), face = $('ballFace'), askBtn = $('ballAsk'), input = $('ballQ');
+    const ballWindow = $('ballWindow'), ballWindowText = $('ballWindowText');
     const streakBox = $('streakBox'), streakCount = $('streakCount'), streakWeek = $('streakWeek');
     if (!ball) return;
     const FALLBACK_CLASSIC = [
-      'В тени сумерек шансы тихо отступают.', 'Спроси позже.', 'Звёзды молчат.',
-      'Даже не думай.', 'Туман скрывает ответ.', 'Скорее да, чем нет.',
-      'Ночь пока не решила.', 'Знаки говорят — да.', 'Не в этот раз.', 'Подожди до рассвета.',
-      'Тьма кивает, но не обещает.', 'Спроси ещё раз, когда стихнет ветер.'
+      'Скорее да.', 'Скорее нет.', 'Пока нет данных.', 'Возможно, но не факт.',
+      'Зависит от тебя.', 'Шансы примерно пополам.', 'Да, если сделаешь это сам.',
+      'Нет, не в этот раз.', 'Слишком рано судить.', 'Скорее всего, да.',
+      'Скорее всего, нет.', 'Не стоит на это рассчитывать.'
     ];
     const FALLBACK_BLUNT = [
       'Нет.', 'Да. Точка.', 'Сам знаешь ответ.', 'Хватит спрашивать — делай.',
       'Нет, и это окончательно.', 'Да, но не ной потом.', 'Забудь.', 'Ещё чего.',
       'Да, если перестанешь сомневаться.', 'Нет. Следующий вопрос.'
     ];
-    const PERSONA_CLASSIC = 'Ты магический предсказательный шар. Отвечай только одной короткой фразой на русском, в нуарном тоне, уклончиво и мистически, без объяснений.';
+    const PERSONA_CLASSIC = 'Ты предсказательный шар. Отвечай только одной короткой фразой на русском, спокойным отстранённым тоном, реалистично и по делу, без мистики, метафор и поэзии, без объяснений.';
     const PERSONA_BLUNT = 'Ты магический предсказательный шар в ударном режиме. Отвечай только одной короткой фразой на русском, прямо и жёстко, без смягчений и без объяснений.';
     let mode = 'classic';
     let busy = false;
@@ -589,22 +598,26 @@
       s.last = t; s.days[t] = true; saveStreak(s); renderStreak();
     }
     function showAnswer(text){
-      // the window is small: keep long answers from overflowing the circle
-      if (text.length > 90) {
-        const cut = text.slice(0, 90);
+      if (text.length > 110) {
+        const cut = text.slice(0, 110);
         text = cut.slice(0, cut.lastIndexOf(' ')) + '…';
       }
-      face.classList.add('ans'); face.innerHTML = '';
-      const sp = document.createElement('span'); sp.className = 'anstext'; sp.textContent = text;
-      face.appendChild(sp);
+      ballWindowText.textContent = text;
+      face.classList.add('hide');
+      ballWindow.classList.add('show');
     }
-    function showEight(){ face.classList.remove('ans'); face.innerHTML = '<span class="eight">8</span>'; }
+    function showEight(){ face.classList.remove('hide'); ballWindow.classList.remove('show'); }
     async function ask(){
       if (busy) return; busy = true; askBtn.disabled = true;
       ball.classList.remove('shaking'); void ball.offsetWidth; ball.classList.add('shaking');
+      showEight();
       const q = input.value.trim();
-      const persona = mode==='streak' ? PERSONA_BLUNT : PERSONA_CLASSIC;
+      // lock the mode at tap time: switching pills mid-request must not steal the answer's tone or the streak
+      const askMode = mode;
+      const persona = askMode==='streak' ? PERSONA_BLUNT : PERSONA_CLASSIC;
       const prompt = persona + (q ? ' Вопрос: ' + q : ' Дай одно короткое предсказание.');
+      // claim the day right away: the streak must visibly count the tap, not the late answer
+      if (askMode==='streak') markStreak();
       let answer = null;
       try {
         const ctl = new AbortController(), to = setTimeout(()=>ctl.abort(), 15000);
@@ -614,11 +627,10 @@
       } catch(e){ /* fall through to canned phrases */ }
       setTimeout(()=>{
         if (!answer) {
-          const pool = mode==='streak' ? FALLBACK_BLUNT : FALLBACK_CLASSIC;
+          const pool = askMode==='streak' ? FALLBACK_BLUNT : FALLBACK_CLASSIC;
           answer = pool[Math.floor(Math.random()*pool.length)];
         }
         showAnswer(answer);
-        if (mode==='streak') markStreak();
         ball.classList.remove('shaking'); busy = false; askBtn.disabled = false;
       }, 900);
     }
