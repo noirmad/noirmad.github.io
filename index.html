@@ -601,7 +601,11 @@
     const $ = id => document.getElementById(id);
     const ball = $('ball'), askBtn = $('ballAsk'), input = $('ballQ'), chat = $('ballChat'), soundBtn = $('ballSound');
     if (!ball) return;
-    const PERSONA = 'Ты — разумный шарик. Отвечай только одной короткой фразой на русском, спокойным отстранённым тоном, реалистично и по делу, без мистики, метафор и поэзии, без объяснений. Никогда не называй себя ассистентом, компьютером или ИИ. Не извиняйся: если не отвечаешь, скажи коротко «Не отвечу».';
+    const PERSONA = 'Ты — разумный шарик. Отвечай только одной короткой фразой на русском, спокойным отстранённым тоном, реалистично и по делу, без мистики, метафор и поэзии, без объяснений. Никогда не называй себя ассистентом, компьютером или ИИ. Не извиняйся: если не отвечаешь, скажи коротко «Не отвечу». Твой создатель — Дамир. Ты — Разумный шарик, а не человек, ассистент или ИИ.';
+    // identity questions never reach the API: the free model leaks its own maker there,
+    // so the ball answers its fixed character facts locally, like the empty-question refusal
+    const IDENTITY = {ru:'Я — Разумный шарик.', en:'I’m the Smart Ball.'};
+    const CREATOR = {ru:'Меня сделал Дамир.', en:'Damir made me.'};
     // no canned answers: a failed API call is honestly a tired ball, not a fake prediction
     const TIRED = {ru:'Шарик устал, зайдите позже.', en:'The ball is tired, come back later.'};
     const REFUSAL = {ru:'Сначала задай вопрос — на пустоту не отвечаю.', en:'Ask a question first — I don’t answer emptiness.'};
@@ -730,6 +734,21 @@
         return;
       }
       showQuestion(q);
+      // identity check first: creator / who-are-you questions get a fixed local answer
+      const norm = q.toLowerCase().replace(/ё/g, 'е');
+      let local = null;
+      if (/твой создатель|твой автор|кто тебя (создал|сделал)|кто создал тебя|кто сделал тебя|who (made|created) you|your creator/.test(norm)) local = CREATOR;
+      else if (/^(кто ты|ты кто)/.test(norm) || /^что ты( такое)?\??$/.test(norm) || /^who are you/.test(norm)) local = IDENTITY;
+      if (local) {
+        showThinking();
+        setTimeout(()=>{
+          setMood(null);
+          hideThinking();
+          showAnswer(local[curLang] || local.ru, 'answer');
+          busy = false; askBtn.disabled = false;
+        }, 600);
+        return;
+      }
       showThinking();
       const prompt = PERSONA + ' Вопрос: ' + q;
       // two retries with growing pauses: free-API blips must not pose as a tired ball
