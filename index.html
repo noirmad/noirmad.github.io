@@ -430,23 +430,23 @@
     </section>
 
     <section class="reveal d7">
-      <div class="slabel swap" data-i18n="ball">Разумный шарик</div>
+      <div class="slabel swap" data-i18n="ball">Лэй</div>
       <div class="ball-row">
-        <input class="ball-input" id="ballQ" type="text" maxlength="200" placeholder="Задай вопрос шарику…" data-i18n-ph="ball_ph" autocomplete="off">
+        <input class="ball-input" id="ballQ" type="text" maxlength="200" placeholder="Задай вопрос Лэю…" data-i18n-ph="ball_ph" autocomplete="off">
         <div class="ball-zone">
-          <div class="ball" id="ball" role="button" tabindex="0" aria-label="Спросить шарик">
+          <div class="ball" id="ball" role="button" tabindex="0" aria-label="Спросить Лэя">
             <div class="ball-eyes" id="ballEyes" aria-hidden="true">
               <span class="eye"></span>
               <span class="eye"></span>
             </div>
 
           </div>
-          <button class="ball-sound" id="ballSound" type="button" aria-label="Звук шарика">
+          <button class="ball-sound" id="ballSound" type="button" aria-label="Звук Лэя">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4z" fill="currentColor" stroke="none"/><path class="waves" d="M15 9a4.5 4.5 0 010 6M18 6.5a8.5 8.5 0 010 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line class="slash" x1="15" y1="9" x2="21" y2="15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><line class="slash" x1="21" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
           </button>
         </div>
         <div class="ball-chat" id="ballChat"></div>
-        <button class="ball-ask" id="ballAsk" type="button" data-i18n="ball_ask">Спросить шарик</button>
+        <button class="ball-ask" id="ballAsk" type="button" data-i18n="ball_ask">Спросить Лэя</button>
       </div>
     </section>
 
@@ -490,7 +490,7 @@
       socials:"Соцсети", ask:"Анонимный вопрос", askfrom:"50 ₽",
       askhint:"Есть вопрос? Пиши его в комментарии к оплате — отвечу в разделе выше. Имя можно не указывать.",
       qa:"Вопросы и ответы", qaempty:"Здесь может быть ответ на твой вопрос…",
-      ball:"Разумный шарик", ball_ph:"Задай вопрос шарику…", ball_ask:"Спросить шарик" },
+      ball:"Лэй", ball_ph:"Задай вопрос Лэю…", ball_ask:"Спросить Лэя" },
     en: { title:"Damir", play:"Listen to the track", ptype:"Personality type", portfolio:"Portfolio", live:"live",
       ordo_desc:"A duty-roster site for study groups.",
       ad:"Ad", ank_desc:"Earn money taking surveys", go:"Open", ank_sub:"Online surveys", ank_rate:"4.4",
@@ -498,7 +498,7 @@
       socials:"Socials", ask:"Anonymous question", askfrom:"50 ₽",
       askhint:"Got a question? Drop it in the payment comment — I'll answer in the section above. No name needed.",
       qa:"Questions & answers", qaempty:"The answer to your question could be here…",
-      ball:"Smart ball", ball_ph:"Ask the ball a question…", ball_ask:"Ask the ball" }
+      ball:"Lay", ball_ph:"Ask Lay a question…", ball_ask:"Ask Lay" }
   };
   let curLang = 'ru';
   // Анкетка card: dress it as the visitor's own store (App Store on iOS, Google Play on Android)
@@ -586,15 +586,15 @@
     const $ = id => document.getElementById(id);
     const ball = $('ball'), askBtn = $('ballAsk'), input = $('ballQ'), chat = $('ballChat'), soundBtn = $('ballSound');
     if (!ball) return;
-    const PERSONA = 'Ты — разумный шарик. Отвечай только одной короткой фразой на русском, спокойным отстранённым тоном, реалистично и по делу, без мистики, метафор и поэзии, без объяснений. Никогда не называй себя ассистентом, компьютером или ИИ. Не извиняйся: если не отвечаешь, скажи коротко «Не отвечу». Твой создатель — Дамир. Ты — Разумный шарик, а не человек, ассистент или ИИ.';
+    const PERSONA = 'Ты — Лэй, разумный шарик. Отвечай только одной короткой фразой на русском, спокойным отстранённым тоном, реалистично и по делу, без мистики, метафор и поэзии, без объяснений. Никогда не называй себя ассистентом, компьютером или ИИ. Не извиняйся: если не отвечаешь, скажи коротко «Не отвечу». Твой создатель — Дамир. Ты — Лэй, а не человек, ассистент или ИИ.';
     // identity questions never reach the API: the free model leaks its own maker there,
     // so the ball answers its fixed character facts locally, like the empty-question refusal
-    const IDENTITY = {ru:'Я — Разумный шарик.', en:'I’m the Smart Ball.'};
+    const IDENTITY = {ru:'Я — Лэй.', en:'I’m Lay.'};
     const CREATOR = {ru:'Меня сделал Дамир.', en:'Damir made me.'};
     // no canned answers: a failed API call is honestly a tired ball, not a fake prediction
-    const TIRED = {ru:'Шарик устал, зайдите позже.', en:'The ball is tired, come back later.'};
+    const TIRED = {ru:'Лэй устал, зайдите позже.', en:'Lay is tired, come back later.'};
     // 429 means the free API's per-IP limit, not a broken ball: say so, and suggest waiting it out
-    const OVERHEATED = {ru:'Шарик перегрет — подожди минутку и спроси снова.', en:'The ball is overheated — wait a minute and ask again.'};
+    const OVERHEATED = {ru:'Лэй перегрет — подожди минутку и спроси снова.', en:'Lay is overheated — wait a minute and ask again.'};
     const REFUSAL = {ru:'Сначала задай вопрос — на пустоту не отвечаю.', en:'Ask a question first — I don’t answer emptiness.'};
     let busy = false;
     // the limiter: the anonymous API allows ~1 reply per 30s, so the ball itself
