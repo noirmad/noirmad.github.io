@@ -256,7 +256,7 @@
   .ball-input::placeholder{color:var(--faint)}
   /* the ball itself is now the Grok-bot face: a plain white ball, two black oval eyes, nothing else */
   .ball{
-    width:150px; height:150px; border-radius:50%; margin:6px auto 0; cursor:pointer; position:relative;
+    width:110px; height:110px; border-radius:50%; margin:6px auto 0; cursor:pointer; position:relative;
     background:radial-gradient(circle at 34% 30%, #ffffff 0%, #ececee 45%, #c9c9cd 100%);
     box-shadow:0 24px 60px rgba(0,0,0,.85), inset -10px -14px 30px rgba(0,0,0,.18);
     display:flex; align-items:center; justify-content:center; transition:transform .15s ease;
@@ -290,7 +290,7 @@
   }
   .ball-window.show{opacity:1; transform:translate(-50%,-50%) scale(1)}
   /* the face: two black oval eyes that dart around as a pair and blink together */
-  .ball-eyes{position:relative; z-index:2; display:flex; gap:22px; transition:opacity .3s ease; animation:eyedart 9s ease-in-out infinite}
+  .ball-eyes{position:relative; z-index:2; display:flex; gap:18px; transition:opacity .3s ease; animation:eyedart 9s ease-in-out infinite}
   .ball-eyes.hide{opacity:0}
   .eye{width:14px; height:38px; border-radius:50%; background:#000; animation:eyeblink 5s infinite}
   @keyframes eyedart{
@@ -393,7 +393,7 @@
     </section>
 
     <section class="reveal d7">
-      <div class="slabel swap" data-i18n="ball">Предсказательный шар</div>
+      <div class="slabel swap" data-i18n="ball">Разумный шарик</div>
       <div class="ball-row">
         <input class="ball-input" id="ballQ" type="text" maxlength="200" placeholder="Задай вопрос шару…" data-i18n-ph="ball_ph" autocomplete="off">
         <div class="ball" id="ball" role="button" tabindex="0" aria-label="Спросить шар">
@@ -447,7 +447,7 @@
       socials:"Соцсети", ask:"Анонимный вопрос", askfrom:"50 ₽",
       askhint:"Есть вопрос? Пиши его в комментарии к оплате — отвечу в разделе выше. Имя можно не указывать.",
       qa:"Вопросы и ответы", qaempty:"Здесь может быть ответ на твой вопрос…",
-      ball:"Предсказательный шар", ball_ph:"Задай вопрос шару…", ball_ask:"Спросить шар" },
+      ball:"Разумный шарик", ball_ph:"Задай вопрос шару…", ball_ask:"Спросить шар" },
     en: { title:"Damir", play:"Listen to the track", ptype:"Personality type", portfolio:"Portfolio", live:"live",
       ordo_desc:"A duty-roster site for study groups.",
       ad:"Ad", ank_desc:"Earn money taking surveys", go:"Open", ank_sub:"Online surveys", ank_rate:"4.4",
@@ -455,7 +455,7 @@
       socials:"Socials", ask:"Anonymous question", askfrom:"50 ₽",
       askhint:"Got a question? Drop it in the payment comment — I'll answer in the section above. No name needed.",
       qa:"Questions & answers", qaempty:"The answer to your question could be here…",
-      ball:"Magic 8-ball", ball_ph:"Ask the ball a question…", ball_ask:"Ask the ball" }
+      ball:"Smart ball", ball_ph:"Ask the ball a question…", ball_ask:"Ask the ball" }
   };
   let curLang = 'ru';
   // Анкетка card: dress it as the visitor's own store (App Store on iOS, Google Play on Android)
