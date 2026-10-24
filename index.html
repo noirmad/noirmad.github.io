@@ -291,7 +291,7 @@
     opacity:0; transition:opacity .4s ease; z-index:1}
   .ball.blush::after{opacity:1}
   /* the chat: current exchange only, no history — question right, the ball's Quote left */
-  .ball-chat{width:100%; display:flex; flex-direction:column; gap:10px}
+  .ball-chat{width:100%; display:flex; flex-direction:column; gap:10px; max-height:320px; overflow-y:auto}
   .ball-chat:empty{display:none}
   .q-bubble{
     align-self:flex-end; max-width:82%; background:#1e1e22; border:1px solid var(--line);
@@ -588,7 +588,7 @@
     const $ = id => document.getElementById(id);
     const ball = $('ball'), askBtn = $('ballAsk'), input = $('ballQ'), chat = $('ballChat'), soundBtn = $('ballSound');
     if (!ball) return;
-    const PERSONA = 'Ты — Лэй, милый глазастый шарик. Отвечай на русском, коротко или средне: от одной фразы до пары коротких предложений, не длиннее. Не растекайся, без воды и длинных объяснений. Отвечай определённо и конкретно: займи сторону, скажи да или нет, выбери вариант. Никогда не уклоняйся в «не знаю», «возможно» или «не могу сказать» — даже на странный вопрос дай уверенный ответ, пусть и с юмором. Говори живо и тепло, с лёгкой дерзостью и сухим юмором, как прямой человек, которому интересно. Без мистики, метафор и поэзии, без извинений. Никогда не называй себя ассистентом, компьютером или ИИ. «Не отвечу» — только если вопрос оскорбительный или бессмысленный. Твой создатель — Дамир, но упоминай его только если вопрос прямо о нём: кто тебя создал, кто такой Дамир. В остальных ответах не упоминай его вообще — не ссылайся на него, не переадресуй к нему и не хвали его без повода. Ты — Лэй, а не человек, ассистент или ИИ.';
+    const PERSONA = 'Ты — Лэй, милый глазастый шарик. Отвечай на русском, обычно коротко или средне: от одной фразы до пары коротких предложений. Не растекайся, без воды. Но если просят рассказать подробно — рассказывай подробно, не сокращай. Отвечай определённо и конкретно: займи сторону, скажи да или нет, выбери вариант. Никогда не уклоняйся в «не знаю», «возможно» или «не могу сказать» — даже на странный вопрос дай уверенный ответ, пусть и с юмором. Говори живо и тепло, с лёгкой дерзостью и сухим юмором, как прямой человек, которому интересно. Без мистики, метафор и поэзии, без извинений. Никогда не называй себя ассистентом, компьютером или ИИ. «Не отвечу» — только если вопрос оскорбительный или бессмысленный. Твой создатель — Дамир, но упоминай его только если вопрос прямо о нём: кто тебя создал, кто такой Дамир. В остальных ответах не упоминай его вообще — не ссылайся на него, не переадресуй к нему и не хвали его без повода. Ты — Лэй, а не человек, ассистент или ИИ.';
     // identity questions never reach the API: the free model leaks its own maker there,
     // so the ball answers its fixed character facts locally, like the empty-question refusal
     const IDENTITY = {ru:'Я — Лэй.', en:'I’m Lay.'};
@@ -670,32 +670,29 @@
         }
       } catch(e){ /* sound is garnish, never breaks answers */ }
     }
-    function trimAnswer(text){
-      if (text.length > 240) {
-        const cut = text.slice(0, 240);
-        text = cut.slice(0, cut.lastIndexOf(' ')) + '…';
-      }
-      return text;
-    }
     function showQuestion(q){
       const b = document.createElement('div');
       b.className = 'q-bubble'; b.textContent = q;
       chat.appendChild(b);
+      scrollChat();
     }
+    function scrollChat(){ chat.scrollTop = chat.scrollHeight; }
     let thinkEl = null;
     function showThinking(){
       thinkEl = document.createElement('div');
       thinkEl.className = 'think-bubble';
       thinkEl.innerHTML = '<i></i><i></i><i></i>';
       chat.appendChild(thinkEl);
+      scrollChat();
     }
     function hideThinking(){
       if (thinkEl) { thinkEl.remove(); thinkEl = null; }
     }
     function showAnswer(text, kind){
       const b = document.createElement('div');
-      b.className = 'a-bubble'; b.textContent = trimAnswer(text);
+      b.className = 'a-bubble'; b.textContent = text;
       chat.appendChild(b);
+      scrollChat();
       speak(kind);
     }
     function setMood(mood){
@@ -708,7 +705,6 @@
       setMood('thinking'); // thinking is eyes only — shaking means anger now, nothing else
       const q = input.value.trim();
       input.value = '';
-      chat.innerHTML = '';
       if (!q) {
         // angry refusal: shake + blush + narrowed tilted eyes, no API call
         setMood('angry');
