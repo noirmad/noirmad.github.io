@@ -256,7 +256,7 @@
   .ball-input::placeholder{color:var(--faint)}
   /* the ball itself is now the Grok-bot face: a plain white ball, two black oval eyes, nothing else */
   .ball{
-    width:190px; height:190px; border-radius:50%; margin:6px auto 0; cursor:pointer; position:relative;
+    width:150px; height:150px; border-radius:50%; margin:6px auto 0; cursor:pointer; position:relative;
     background:radial-gradient(circle at 34% 30%, #ffffff 0%, #ececee 45%, #c9c9cd 100%);
     box-shadow:0 24px 60px rgba(0,0,0,.85), inset -10px -14px 30px rgba(0,0,0,.18);
     display:flex; align-items:center; justify-content:center; transition:transform .15s ease;
@@ -285,9 +285,9 @@
   }
   .ball-window.show{opacity:1; transform:translate(-50%,-50%) scale(1)}
   /* the face: two black oval eyes that dart around as a pair and blink together */
-  .ball-eyes{display:flex; gap:28px; transition:opacity .3s ease; animation:eyedart 9s ease-in-out infinite}
+  .ball-eyes{display:flex; gap:22px; transition:opacity .3s ease; animation:eyedart 9s ease-in-out infinite}
   .ball-eyes.hide{opacity:0}
-  .eye{width:16px; height:30px; border-radius:50%; background:#000; animation:eyeblink 5s infinite}
+  .eye{width:14px; height:38px; border-radius:50%; background:#000; animation:eyeblink 5s infinite}
   @keyframes eyedart{
     0%,100%{transform:translate(0,0)}
     12%{transform:translate(-8px,2px)} 25%{transform:translate(6px,-2px)}
@@ -559,13 +559,17 @@
       showEight();
       const q = input.value.trim();
       const prompt = PERSONA + (q ? ' Вопрос: ' + q : ' Дай одно короткое предсказание.');
+      // one retry: a single network blip must not pose as a tired ball
       let answer = null;
-      try {
-        const ctl = new AbortController(), to = setTimeout(()=>ctl.abort(), 15000);
-        const res = await fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt), {signal: ctl.signal});
-        clearTimeout(to);
-        if (res.ok) { const t = (await res.text()).trim(); if (t) answer = t; }
-      } catch(e){ /* handled below as a tired ball */ }
+      for (let attempt = 0; attempt < 2 && !answer; attempt++) {
+        if (attempt > 0) await new Promise(r=>setTimeout(r, 1200));
+        try {
+          const ctl = new AbortController(), to = setTimeout(()=>ctl.abort(), 15000);
+          const res = await fetch('https://text.pollinations.ai/' + encodeURIComponent(prompt), {signal: ctl.signal});
+          clearTimeout(to);
+          if (res.ok) { const t = (await res.text()).trim(); if (t) answer = t; }
+        } catch(e){ /* retry once, then tired */ }
+      }
       setTimeout(()=>{
         if (!answer) {
           // honest failure: no fake prediction, no history entry
