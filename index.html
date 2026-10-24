@@ -33,7 +33,7 @@
   @font-face{font-family:'Old London';font-style:normal;font-weight:400;font-display:swap;src:url('vizitka-assets/fonts/old-london.woff') format('woff');}
   :root{
     --bg:#000000; --card:#0a0a0c;
-    --text:#f5f5f4; --muted:#9c9ca3; --faint:#5c5c63;
+    --text:#f5f5f4; --muted:#b3b3ba; --faint:#7d7d85;
     --line:rgba(255,255,255,.08);
     --shadow:0 18px 50px rgba(0,0,0,.8);
   }
@@ -145,6 +145,7 @@
     display:flex; align-items:center; gap:12px; margin-bottom:16px;
   }
   .slabel::after{content:""; flex:1; height:1px; background:var(--line)}
+  .secsub{margin:-6px 0 16px; color:var(--muted); font-size:13px; line-height:1.5}
 
   /* ---------- quote ---------- */
   .quote-sec{margin-top:82px}
@@ -405,6 +406,7 @@
 
     <section class="reveal d7">
       <div class="slabel swap" data-i18n="ball">Лэй</div>
+      <p class="secsub swap" data-i18n="ball_sub">Бесплатный чат с шариком</p>
       <div class="ball-row">
         <div class="ball-zone">
           <div class="ball" id="ball" role="button" tabindex="0" aria-label="Спросить Лэя">
@@ -433,26 +435,9 @@
         <span class="swap" data-i18n="ask">Анонимный вопрос</span>
         <span class="askr"><span class="swap" data-i18n="askfrom">50 ₽</span> ↗</span>
       </a>
-      <p class="askhint swap" data-i18n="askhint">Есть вопрос? Пиши его в комментарии к оплате — отвечу в разделе выше. Имя можно не указывать.</p>
+      <p class="askhint swap" data-i18n="askhint">Есть вопрос лично мне? Пиши его в комментарии к оплате — отвечу в разделе выше. Имя можно не указывать.</p>
     </section>
 
-
-    <section class="reveal d7">
-      <div class="card appcard" id="ankCard">
-        <a class="applink" href="https://www.anketka.ru/referral/14469932" target="_blank" rel="sponsored nofollow noopener" aria-label="Анкетка">
-          <img class="appicon" src="vizitka-assets/anketka-icon.jpg" alt="" draggable="false">
-          <span class="appmeta">
-            <span class="appname">Анкетка</span>
-            <span class="appsub swap" data-i18n="ank_desc">Зарабатывай на опросах</span>
-            <span class="apprate"><span class="star">★</span> <span id="ankRate">4,4 · 4,8 тыс. оценок</span></span>
-          </span>
-          <span class="apprail">
-            <span class="adpill swap" data-i18n="ad">Реклама</span>
-            <span class="btn btn-main appbtn"><span id="ankBtn">Открыть</span></span>
-          </span>
-        </a>
-      </div>
-    </section>
 
     <section class="reveal d7">
       <div class="slabel swap" data-i18n="socials">Соцсети</div>
@@ -468,6 +453,23 @@
         </a>
         <a class="soc" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube">
           <svg viewBox="0 0 24 24"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.5A3.02 3.02 0 0 0 .5 6.19C0 8.07 0 12 0 12s0 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14c1.87.5 9.38.5 9.38.5s7.5 0 9.38-.5a3.02 3.02 0 0 0 2.12-2.14C24 15.93 24 12 24 12s0-3.93-.5-5.81ZM9.55 15.57V8.43L15.82 12l-6.27 3.57Z"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <section class="reveal d7">
+      <div class="card appcard" id="ankCard">
+        <a class="applink" href="https://www.anketka.ru/referral/14469932" target="_blank" rel="sponsored nofollow noopener" aria-label="Анкетка">
+          <img class="appicon" src="vizitka-assets/anketka-icon.jpg" alt="" draggable="false">
+          <span class="appmeta">
+            <span class="appname">Анкетка</span>
+            <span class="appsub swap" data-i18n="ank_desc">Зарабатывай на опросах</span>
+            <span class="apprate"><span class="star">★</span> <span id="ankRate">4,4 · 4,8 тыс. оценок</span></span>
+          </span>
+          <span class="apprail">
+            <span class="adpill swap" data-i18n="ad">Реклама</span>
+            <span class="btn btn-main appbtn"><span id="ankBtn">Открыть</span></span>
+          </span>
         </a>
       </div>
     </section>
@@ -493,17 +495,17 @@
       ad:"Реклама", ank_desc:"Зарабатывай на опросах", go:"Открыть", ank_sub:"Онлайн-опросы", ank_rate:"4,4",
       open:"Открыть сайт", demo:"Демо", soon:"скоро",
       socials:"Соцсети", ask:"Анонимный вопрос", askfrom:"50 ₽",
-      askhint:"Есть вопрос? Пиши его в комментарии к оплате — отвечу в разделе выше. Имя можно не указывать.",
+      askhint:"Есть вопрос лично мне? Пиши его в комментарии к оплате — отвечу в разделе выше. Имя можно не указывать.",
       qa:"Вопросы и ответы", qaempty:"Здесь может быть ответ на твой вопрос…",
-      ball:"Лэй", ball_ph:"Задай вопрос Лэю…", ball_ask:"Спросить Лэя" },
+      ball:"Лэй", ball_ph:"Задай вопрос Лэю…", ball_ask:"Спросить Лэя", ball_sub:"Бесплатный чат с шариком" },
     en: { title:"Damir", play:"Listen to the track", ptype:"Personality type", portfolio:"Portfolio", live:"live",
       ordo_desc:"A duty-roster site for study groups.",
       ad:"Ad", ank_desc:"Earn money taking surveys", go:"Open", ank_sub:"Online surveys", ank_rate:"4.4",
       open:"Visit site", demo:"Demo", soon:"soon",
       socials:"Socials", ask:"Anonymous question", askfrom:"50 ₽",
-      askhint:"Got a question? Drop it in the payment comment — I'll answer in the section above. No name needed.",
+      askhint:"Got a question for me personally? Drop it in the payment comment — I'll answer in the section above. No name needed.",
       qa:"Questions & answers", qaempty:"The answer to your question could be here…",
-      ball:"Lay", ball_ph:"Ask Lay a question…", ball_ask:"Ask Lay" }
+      ball:"Lay", ball_ph:"Ask Lay a question…", ball_ask:"Ask Lay", ball_sub:"Free chat with the ball" }
   };
   let curLang = 'ru';
   // Анкетка card: dress it as the visitor's own store (App Store on iOS, Google Play on Android)
