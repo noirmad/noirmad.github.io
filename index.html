@@ -317,6 +317,21 @@
     0%,90%,100%{transform:scaleY(1)}
     92%,94%{transform:scaleY(.08)}
   }
+  /* TEST idle theatre (deploy 77): after 10s without a touch the eyes look
+     around Grok-style — bigger glances, squints, double-takes — until the
+     next touch. Old eyedart/eyeblink stay untouched for instant rollback. */
+  .ball-eyes.idle-look{animation:idlelook 8s ease-in-out infinite}
+  @keyframes idlelook{
+    0%,100%{transform:translate(0,0) scaleY(1)}
+    12%{transform:translate(-11px,1px) scaleY(1)}
+    22%{transform:translate(-3px,0) scaleY(1)}
+    30%{transform:translate(-11px,1px) scaleY(1)}
+    42%{transform:translate(10px,-2px) scaleY(.9)}
+    54%{transform:translate(0,-6px) scaleY(1.08)}
+    66%{transform:translate(-8px,4px) scaleY(1)}
+    76%{transform:translate(0,0) scaleY(.55)}
+    86%{transform:translate(9px,2px) scaleY(1)}
+  }
   /* moods: thinking is eyes only (no shake); anger is shake + blush + narrowed tilted eyes */
   .ball.thinking .ball-eyes{animation:eyethink 1.6s ease-in-out infinite}
   @keyframes eyethink{
@@ -597,6 +612,22 @@
     const OVERHEATED = {ru:'Лэй перегрет — подожди минутку и спроси снова.', en:'Lay is overheated — wait a minute and ask again.'};
     const REFUSAL = {ru:'Сначала задай вопрос — на пустоту не отвечаю.', en:'Ask a question first — I don’t answer emptiness.'};
     let busy = false;
+    // TEST idle theatre (deploy 77): after 10s without a touch, the eyes
+    // start looking around Grok-style until the next touch. Transform-only,
+    // no new elements — the №57 ghost-dash lesson. Old animations untouched.
+    // Thinking/anger win over idle by selector weight, so no state fights.
+    const eyes = $('ballEyes');
+    const IDLE_MS = 10000;
+    let idleTimer = null;
+    function pokeIdle(){
+      if (idleTimer) clearTimeout(idleTimer);
+      if (eyes) eyes.classList.remove('idle-look');
+      idleTimer = setTimeout(()=>{ if (eyes && !busy) eyes.classList.add('idle-look'); }, IDLE_MS);
+    }
+    document.addEventListener('pointerdown', pokeIdle, true);
+    input.addEventListener('input', pokeIdle);
+    input.addEventListener('keydown', pokeIdle);
+    pokeIdle(); // start counting from page load
     // the limiter: the anonymous API allows ~1 reply per 30s, so the ball itself
     // never sends faster — a 35s gap (limit + margin) after every API call, shared
     // across tabs of one browser via localStorage, so two tabs cannot double the rate
