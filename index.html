@@ -337,11 +337,6 @@
   .ball.angry .eye{animation:none}
   .ball.angry .eye:first-child{transform:rotate(20deg) scaleY(.45)}
   .ball.angry .eye:last-child{transform:rotate(-20deg) scaleY(.45)}
-  /* TEST 2026-10-25: quote-shaped eyes — old eye rules untouched, rollback = remove .quote-eyes from #ballEyes.
-     clip-path (not transform) so blink/dart/think animations keep working on the slanted shape. */
-  .ball-eyes.quote-eyes .eye{
-    clip-path:polygon(15% 0, 100% 0, 55% 100%, 0 100%);
-  }
   .ball-ask{
     width:100%; padding:13px; border-radius:14px; border:0; cursor:pointer;
     background:var(--text); color:var(--bg); font:inherit; font-size:15px; font-weight:700;
@@ -407,7 +402,7 @@
       <div class="ball-row">
         <div class="ball-zone">
           <div class="ball" id="ball" role="button" tabindex="0" aria-label="Спросить Лэя">
-            <div class="ball-eyes quote-eyes" id="ballEyes" aria-hidden="true">
+            <div class="ball-eyes" id="ballEyes" aria-hidden="true">
               <span class="eye"></span>
               <span class="eye"></span>
             </div>
