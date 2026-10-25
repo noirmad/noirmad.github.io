@@ -317,20 +317,18 @@
     0%,90%,100%{transform:scaleY(1)}
     92%,94%{transform:scaleY(.08)}
   }
-  /* TEST idle theatre (deploy 77): after 10s without a touch the eyes look
-     around Grok-style — bigger glances, squints, double-takes — until the
-     next touch. Old eyedart/eyeblink stay untouched for instant rollback. */
-  .ball-eyes.idle-look{animation:idlelook 8s ease-in-out infinite}
+  /* TEST idle theatre v2 (deploy 78): v1 was too close to ambient eyedart
+     (±11px vs ±8px) — v2 goes bold: ±17px, held stares, snappy jumps,
+     strong squints and slight head-tilts. Old animations still untouched. */
+  .ball-eyes.idle-look{animation:idlelook 9s ease-in-out infinite}
   @keyframes idlelook{
-    0%,100%{transform:translate(0,0) scaleY(1)}
-    12%{transform:translate(-11px,1px) scaleY(1)}
-    22%{transform:translate(-3px,0) scaleY(1)}
-    30%{transform:translate(-11px,1px) scaleY(1)}
-    42%{transform:translate(10px,-2px) scaleY(.9)}
-    54%{transform:translate(0,-6px) scaleY(1.08)}
-    66%{transform:translate(-8px,4px) scaleY(1)}
-    76%{transform:translate(0,0) scaleY(.55)}
-    86%{transform:translate(9px,2px) scaleY(1)}
+    0%,16%{transform:translate(-17px,2px) scaleY(1) rotate(0deg)}
+    20%,36%{transform:translate(16px,-2px) scaleY(1) rotate(0deg)}
+    40%,52%{transform:translate(0,-8px) scaleY(1.2) rotate(0deg)}
+    56%,64%{transform:translate(0,0) scaleY(.3) rotate(0deg)}
+    68%,80%{transform:translate(-17px,5px) scaleY(1) rotate(-6deg)}
+    84%,94%{transform:translate(17px,3px) scaleY(1) rotate(5deg)}
+    100%{transform:translate(0,0) scaleY(1) rotate(0deg)}
   }
   /* moods: thinking is eyes only (no shake); anger is shake + blush + narrowed tilted eyes */
   .ball.thinking .ball-eyes{animation:eyethink 1.6s ease-in-out infinite}
