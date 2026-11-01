@@ -48,7 +48,7 @@
   }
   @keyframes pagein{to{opacity:1}}
   img{-webkit-user-drag:none; user-select:none; -webkit-user-select:none}
-  .cover-quote,.avatar,.appicon{pointer-events:none; -webkit-touch-callout:none}
+  .cover-quote,.cover-phrase,.avatar,.appicon{pointer-events:none; -webkit-touch-callout:none}
   ::selection{background:var(--text);color:var(--bg)}
   .wrap{max-width:680px; margin:0 auto; padding:0 22px}
   /* language switch: focus-pull cascade (blur + sink, staggered) */
@@ -58,7 +58,7 @@
   /* entrance waits until images + fonts are ready, then everything plays in sync */
   html.pre:not(.ready) body,
   html.pre:not(.ready) .reveal,
-  html.pre:not(.ready) .cover-quote{animation-play-state:paused}
+  html.pre:not(.ready) .cover-quote,html.pre:not(.ready) .cover-phrase{animation-play-state:paused}
 
   /* ---------- cover: social banner 3:1, no blur ---------- */
   .cover{position:relative; aspect-ratio:3/1; max-height:440px; min-height:200px; overflow:hidden; background:#000}
@@ -72,6 +72,15 @@
     transition:opacity .3s ease, transform .3s ease, filter .3s ease;
   }
   .cover-quote .q-en{font-family:"Old London",serif; letter-spacing:.02em}
+  .cover-quote[hidden]{display:none}
+  .cover-phrase{
+    position:absolute; inset:0; margin:auto; z-index:1;
+    width:min(94%,980px); height:auto; max-height:80%; object-fit:contain;
+    opacity:0; animation:coverin 2.8s cubic-bezier(.22,.8,.3,1) forwards;
+    transition:opacity .3s ease, transform .3s ease, filter .3s ease;
+  }
+  .cover-phrase.done{animation:none; opacity:1; transform:none}
+  .cover-phrase[hidden]{display:none}
   @keyframes coverin{from{transform:translateY(12px); opacity:0} 30%{opacity:1} to{transform:none; opacity:1}}
   /* once the entrance settles, hand the cover over to plain transitions (same as .settled for blocks):
      otherwise the finished animation's fill fights the language cascade and the cover snaps */
@@ -343,13 +352,14 @@
   .ball-ask:active{transform:scale(.99)}
   .ball-ask:disabled{opacity:.5}
   @media (prefers-reduced-motion:reduce){
-    body,.reveal,.cover-quote{animation:none; opacity:1; transform:none; filter:none}
+    body,.reveal,.cover-quote,.cover-phrase{animation:none; opacity:1; transform:none; filter:none}
   }
 </style>
 </head>
 <body>
   <div class="cover">
-    <div class="cover-quote"><span id="coverQuoteRu">Ни меня ни тебя нет на самом деле</span><span class="q-en" id="coverQuoteEn" hidden>Neither I nor you really exist</span></div>
+    <img class="cover-phrase" id="coverQuoteRu" src="vizitka-assets/quote.png" alt="Ни меня ни тебя нет на самом деле" draggable="false">
+    <div class="cover-quote" id="coverQuoteEn" hidden><span class="q-en">Neither I nor you really exist</span></div>
     <div class="topbar">
       <div class="seg" role="group" aria-label="Language">
         <button id="lang-ru" class="on" onclick="setLang('ru')">RU</button>
@@ -459,7 +469,7 @@
   // QA hook: ?still=1 freezes all animation at the final state (for screenshots)
   if (new URLSearchParams(location.search).get('still')) {
     const st = document.createElement('style');
-    st.textContent = '*{animation:none!important}body,.reveal,.cover-quote{opacity:1!important;transform:none!important;filter:none!important}';
+    st.textContent = '*{animation:none!important}body,.reveal,.cover-quote,.cover-phrase{opacity:1!important;transform:none!important;filter:none!important}';
     document.head.appendChild(st);
   }
   // casual-save protection: no context menu / drag on images
@@ -514,11 +524,11 @@
   document.querySelectorAll('.reveal').forEach(el=>
     el.addEventListener('animationend', ()=>el.classList.add('settled'), {once:true}));
   setTimeout(()=>document.querySelectorAll('.reveal').forEach(el=>el.classList.add('settled')), 4000);
-  const coverEl = document.querySelector('.cover-quote');
-  if (coverEl) {
-    coverEl.addEventListener('animationend', ()=>coverEl.classList.add('done'), {once:true});
-    setTimeout(()=>coverEl.classList.add('done'), 7000);
-  }
+  const coverEls = [...document.querySelectorAll('.cover-quote,.cover-phrase')];
+  coverEls.forEach(el=>{
+    el.addEventListener('animationend', ()=>el.classList.add('done'), {once:true});
+    setTimeout(()=>el.classList.add('done'), 7000);
+  });
   function setLang(l, instant){
     if (l === curLang && !instant) return;
     curLang = l;
@@ -528,9 +538,8 @@
     if (instant || !document.documentElement.classList.contains('ready')) { applyLang(l); return; }
     // freeze any block still entering: transitions must own the motion, not the entrance animation
     document.querySelectorAll('.reveal').forEach(el=>el.classList.add('settled'));
-    if (coverEl) coverEl.classList.add('done');
-    const coverImg = document.querySelector('.cover-quote');
-    const els = [...(coverImg ? [coverImg] : []), ...document.querySelectorAll('.wrap .reveal, .wrap footer')];
+    coverEls.forEach(el=>el.classList.add('done'));
+    const els = [...coverEls, ...document.querySelectorAll('.wrap .reveal, .wrap footer')];
     els.forEach((el,i)=>{ el.style.transitionDelay = (i*32)+'ms'; el.classList.add('langhide'); });
     setTimeout(()=>{
       applyLang(l);
